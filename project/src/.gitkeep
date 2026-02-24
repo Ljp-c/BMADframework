@@ -1,0 +1,17 @@
+# Source Directory
+
+This directory contains the source code implementation.
+
+## Structure
+
+```
+src/
+├── components/     # Reusable UI components
+├── pages/          # Page components
+├── hooks/          # Custom React hooks
+├── services/       # API services
+├── stores/         # State management
+├── types/          # TypeScript type definitions
+├── utils/          # Utility functions
+└── styles/         # Global styles
+```
