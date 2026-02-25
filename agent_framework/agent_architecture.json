@@ -1,6 +1,12 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "project_docs_root": "project/docs",
+  "interaction_mode": {
+    "enabled": true,
+    "user_participation": "active",
+    "dialogue_flow": "collaborative",
+    "feedback_enabled": true
+  },
   "agents": [
     {
       "id": "analyst",
@@ -8,7 +14,12 @@
       "persona_file": "project/.bmad/personas/analyst.md",
       "primary_outputs": [
         "project/docs/project-brief.md"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "pm",
@@ -16,7 +27,12 @@
       "persona_file": "project/.bmad/personas/pm.md",
       "primary_outputs": [
         "project/docs/prd.md"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "architect",
@@ -28,7 +44,12 @@
         "project/docs/data-models.md",
         "project/docs/api-reference.md",
         "project/docs/environment.md"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "design-architect",
@@ -37,7 +58,12 @@
       "primary_outputs": [
         "project/docs/front-end-architecture.md",
         "project/docs/component-specs.md"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "po",
@@ -49,7 +75,12 @@
         "project/docs/stories/epic-1/story-1.3.md",
         "project/docs/stories/epic-2/story-2.1.md",
         "project/docs/stories/epic-2/story-2.2.md"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "dev",
@@ -57,7 +88,12 @@
       "persona_file": "project/.bmad/personas/dev.md",
       "primary_outputs": [
         "project/src"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     },
     {
       "id": "qa",
@@ -65,7 +101,12 @@
       "persona_file": "project/.bmad/personas/qa.md",
       "primary_outputs": [
         "project/docs"
-      ]
+      ],
+      "interaction_style": {
+        "proactive_questions": true,
+        "clarification_requests": true,
+        "progress_updates": true
+      }
     }
   ],
   "phases": [
@@ -78,7 +119,12 @@
       "outputs": [
         "project/docs/project-brief.md"
       ],
-      "gates": []
+      "gates": [],
+      "user_interaction_points": [
+        "requirements_gathering",
+        "scope_confirmation",
+        "deliverable_review"
+      ]
     },
     {
       "id": "phase-2",
@@ -93,6 +139,11 @@
       ],
       "gates": [
         "project/.bmad/checklists/prd-checklist.md"
+      ],
+      "user_interaction_points": [
+        "feature_prioritization",
+        "requirement_validation",
+        "deliverable_review"
       ]
     },
     {
@@ -112,6 +163,11 @@
       ],
       "gates": [
         "project/.bmad/checklists/architecture-checklist.md"
+      ],
+      "user_interaction_points": [
+        "technology_discussion",
+        "design_decisions",
+        "deliverable_review"
       ]
     },
     {
@@ -129,6 +185,11 @@
       ],
       "gates": [
         "project/.bmad/checklists/frontend-architecture-checklist.md"
+      ],
+      "user_interaction_points": [
+        "ui_discussion",
+        "component_design",
+        "deliverable_review"
       ]
     },
     {
@@ -151,6 +212,11 @@
       "gates": [
         "project/.bmad/checklists/story-draft-checklist.md",
         "project/.bmad/checklists/story-ready-checklist.md"
+      ],
+      "user_interaction_points": [
+        "story_creation",
+        "acceptance_criteria",
+        "deliverable_review"
       ]
     },
     {
@@ -168,7 +234,12 @@
       "outputs": [
         "project/src"
       ],
-      "gates": []
+      "gates": [],
+      "user_interaction_points": [
+        "implementation_questions",
+        "code_review",
+        "progress_updates"
+      ]
     },
     {
       "id": "phase-7",
@@ -186,7 +257,12 @@
       "outputs": [
         "project/docs"
       ],
-      "gates": []
+      "gates": [],
+      "user_interaction_points": [
+        "test_strategy",
+        "bug_reports",
+        "quality_signoff"
+      ]
     }
   ],
   "handoffs": [
@@ -195,14 +271,16 @@
       "to": "pm",
       "artifacts": [
         "project/docs/project-brief.md"
-      ]
+      ],
+      "notification_message": "**Analyst**: 项目简报已完成，现在交给 PM 继续处理产品需求文档。"
     },
     {
       "from": "pm",
       "to": "architect",
       "artifacts": [
         "project/docs/prd.md"
-      ]
+      ],
+      "notification_message": "**PM**: 产品需求文档已准备就绪，现在交给 Architect 进行系统架构设计。"
     },
     {
       "from": "architect",
@@ -213,7 +291,8 @@
         "project/docs/data-models.md",
         "project/docs/api-reference.md",
         "project/docs/environment.md"
-      ]
+      ],
+      "notification_message": "**Architect**: 系统架构设计已完成，现在交给 Design Architect 进行前端架构设计。"
     },
     {
       "from": "design-architect",
@@ -221,7 +300,8 @@
       "artifacts": [
         "project/docs/front-end-architecture.md",
         "project/docs/component-specs.md"
-      ]
+      ],
+      "notification_message": "**Design Architect**: 前端架构设计已完成，现在交给 PO 创建用户故事。"
     },
     {
       "from": "po",
@@ -232,14 +312,22 @@
         "project/docs/stories/epic-1/story-1.3.md",
         "project/docs/stories/epic-2/story-2.1.md",
         "project/docs/stories/epic-2/story-2.2.md"
-      ]
+      ],
+      "notification_message": "**PO**: 用户故事已创建完成，现在交给 Dev 进行实现。"
     },
     {
       "from": "dev",
       "to": "qa",
       "artifacts": [
         "project/src"
-      ]
+      ],
+      "notification_message": "**Dev**: 代码实现已完成，现在交给 QA 进行质量测试。"
     }
-  ]
+  ],
+  "dialogue_templates": {
+    "welcome": "欢迎使用智能体对话系统！我是您的项目助手，今天将由我和我的团队为您服务。",
+    "handoff": "任务交接：{from_agent} -> {to_agent}\n交接内容: {artifacts}",
+    "completion": "恭喜！{phase_name} 阶段已完成。{next_steps}",
+    "clarification": "为了更好地为您服务，我需要确认一些信息：{questions}"
+  }
 }

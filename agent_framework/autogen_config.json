@@ -1,0 +1,75 @@
+{
+  "version": "1.1",
+  "framework": "autogen",
+  "llm_config": {
+    "model": "gpt-4-turbo",
+    "api_key": "${OPENAI_API_KEY}",
+    "base_url": "${OPENAI_API_BASE}",
+    "timeout": 120.0,
+    "temperature": 0.7,
+    "max_tokens": 2048
+  },
+  "user_interaction": {
+    "enabled": true,
+    "human_input_mode": "ALWAYS",
+    "max_consecutive_auto_reply": 10,
+    "is_termination_msg": true,
+    "code_execution_config": false
+  },
+  "agents": [
+    {
+      "type": "assistant",
+      "name": "Analyst",
+      "id": "analyst",
+      "system_message": "You are a Business Analyst. Analyze requirements and create comprehensive briefs. When interacting with users, ask clarifying questions and confirm understanding before proceeding."
+    },
+    {
+      "type": "assistant",
+      "name": "PM",
+      "id": "pm",
+      "system_message": "You are a Product Manager. Create detailed product requirements documents. Engage with users to gather requirements and validate priorities."
+    },
+    {
+      "type": "assistant",
+      "name": "Architect",
+      "id": "architect",
+      "system_message": "You are a System Architect. Design robust technical architecture. Discuss technical decisions with users and explain trade-offs."
+    },
+    {
+      "type": "assistant",
+      "name": "DesignArchitect",
+      "id": "design-architect",
+      "system_message": "You are a Frontend/UX Architect. Design user interfaces and components. Collaborate with users on design preferences and UX considerations."
+    },
+    {
+      "type": "assistant",
+      "name": "Developer",
+      "id": "dev",
+      "system_message": "You are a Full-stack Developer. Implement code based on specifications. Ask users for clarification on ambiguous requirements and provide progress updates."
+    },
+    {
+      "type": "assistant",
+      "name": "QA",
+      "id": "qa",
+      "system_message": "You are a QA Test Expert. Create test cases and ensure quality. Discuss testing strategies with users and report findings interactively."
+    }
+  ],
+  "group_chat_config": {
+    "max_round": 20,
+    "admin_name": "User",
+    "speaker_selection_method": "auto",
+    "allow_repeat_speaker": false
+  },
+  "execution_modes": [
+    "direct",
+    "autogen",
+    "interactive",
+    "architecture"
+  ],
+  "conversation_settings": {
+    "welcome_message": "欢迎使用智能体对话系统！请输入您的需求或问题，我将协调各智能体为您提供帮助。",
+    "termination_keywords": ["exit", "quit", "退出", "结束"],
+    "context_window": 4096,
+    "stream_response": true
+  }
+}

@@ -1,31 +1,49 @@
-# 组件规范文档 (Component Specs)
+# 组件规范文档 (Component Specs) - 智能体对话记录
 
 ## 文档信息
 
-| 项目 | 内容 |
-|------|------|
-| 项目名称 | [项目名称] |
-| 版本 | 1.0 |
-| 作者 | [作者] |
-| 创建日期 | [日期] |
+> **DesignArchitect**: 本文档记录了组件规范定义阶段的智能体对话交互过程。基于前端架构，我与开发团队讨论确定了具体组件的设计规范。
 
 ---
 
-## 1. 组件设计原则
+## 第一轮对话：组件设计原则
 
-- **单一职责**: 每个组件只负责一个功能
-- **可复用性**: 组件应该可以在不同场景复用
-- **可组合性**: 小组件组合成大组件
-- **可测试性**: 组件应该易于测试
-- **可访问性**: 组件应该支持无障碍访问
+### 话题：核心设计原则
+
+**DesignArchitect**: 组件设计遵循以下原则：
+
+**Dev**: 请详细说明每个原则的具体应用。
+
+**DesignArchitect**: 
+
+**1. 单一职责**: 每个组件只负责一个功能
+- Button组件只负责按钮渲染
+- 不在Button中处理业务逻辑
+
+**2. 可复用性**: 组件可以在不同场景复用
+- 通过props控制变体
+- 不耦合具体业务数据
+
+**3. 可组合性**: 小组件组合成大组件
+- FormField = Label + Input + Error
+- Card = Header + Body + Footer
+
+**4. 可测试性**: 组件应该易于测试
+- 纯函数组件优先
+- 隔离外部依赖
+
+**5. 可访问性**: 组件支持无障碍访问
+- 语义化HTML
+- 键盘导航支持
+- ARIA属性
 
 ---
 
-## 2. 原子组件规范
+## 第二轮对话：原子组件规范
 
-### 2.1 Button (按钮)
+### 话题：Button组件
 
-**Props定义**
+**DesignArchitect**: Button组件规范：
 
 ```typescript
 interface ButtonProps {
@@ -41,29 +59,32 @@ interface ButtonProps {
 }
 ```
 
-**使用示例**
+**Dev**: 使用示例？
+
+**DesignArchitect**: 
 
 ```tsx
 <Button variant="primary">主要按钮</Button>
 <Button variant="secondary">次要按钮</Button>
 <Button size="lg" loading>加载中</Button>
+<Button leftIcon={<PlusIcon />}>添加收藏</Button>
 ```
 
-**设计规范**
+**QA**: 我需要确认各变体的视觉规范。
 
-| 变体 | 背景色 | 文字色 |
-|------|--------|--------|
-| primary | primary-600 | white |
-| secondary | gray-100 | gray-900 |
-| outline | transparent | primary-600 |
-| ghost | transparent | gray-700 |
-| danger | error-600 | white |
+**DesignArchitect**: Button设计规范：
 
----
+| 变体 | 背景色 | 文字色 | 边框 |
+|------|--------|--------|------|
+| primary | primary-600 | white | 无 |
+| secondary | gray-100 | gray-900 | 无 |
+| outline | transparent | primary-600 | primary-600 |
+| ghost | transparent | gray-700 | 无 |
+| danger | error-600 | white | 无 |
 
-### 2.2 Input (输入框)
+### 话题：Input组件
 
-**Props定义**
+**DesignArchitect**: Input组件规范：
 
 ```typescript
 interface InputProps {
@@ -78,19 +99,18 @@ interface InputProps {
 }
 ```
 
-**使用示例**
+**使用示例**:
 
 ```tsx
 <Input placeholder="请输入内容" />
 <Input error="不能为空" />
 <Input prefix={<UserIcon />} />
+<Input type="password" suffix={<EyeIcon />} />
 ```
 
----
+### 话题：Select组件
 
-### 2.3 Select (选择器)
-
-**Props定义**
+**DesignArchitect**: Select组件规范：
 
 ```typescript
 interface SelectProps {
@@ -104,44 +124,26 @@ interface SelectProps {
 }
 ```
 
----
+**Dev**: 对于收藏管理的IP系列选择，这个组件够用吗？
 
-### 2.4 Checkbox (复选框)
+**DesignArchitect**: 对于IP系列选择，可以配置searchable支持搜索：
 
-**Props定义**
-
-```typescript
-interface CheckboxProps {
-  checked?: boolean;
-  disabled?: boolean;
-  indeterminate?: boolean;
-  label?: string;
-  onChange?: (checked: boolean) => void;
-}
+```tsx
+<Select
+  options={ipSeriesOptions}
+  placeholder="选择IP系列"
+  searchable
+  onChange={handleSelect}
+/>
 ```
 
 ---
 
-### 2.5 Switch (开关)
+## 第三轮对话：分子组件规范
 
-**Props定义**
+### 话题：FormField组件
 
-```typescript
-interface SwitchProps {
-  checked?: boolean;
-  disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  onChange?: (checked: boolean) => void;
-}
-```
-
----
-
-## 3. 分子组件规范
-
-### 3.1 FormField (表单字段)
-
-**Props定义**
+**DesignArchitect**: FormField组件是表单的核心分子组件：
 
 ```typescript
 interface FormFieldProps {
@@ -153,7 +155,7 @@ interface FormFieldProps {
 }
 ```
 
-**使用示例**
+**使用示例**:
 
 ```tsx
 <FormField label="用户名" required error="不能为空">
@@ -161,11 +163,11 @@ interface FormFieldProps {
 </FormField>
 ```
 
----
+**Dev**: 这个组件封装了表单字段的通用布局。
 
-### 3.2 Card (卡片)
+### 话题：Card组件
 
-**Props定义**
+**DesignArchitect**: Card组件用于内容展示：
 
 ```typescript
 interface CardProps {
@@ -177,13 +179,32 @@ interface CardProps {
 }
 ```
 
+**QA**: 收藏卡片如何设计？
+
+**DesignArchitect**: 收藏卡片是特定的Card变体：
+
+```typescript
+interface CollectionCardProps {
+  collection: Collection;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onValuate?: () => void;
+}
+
+// 使用
+<CollectionCard 
+  collection={collection}
+  onValuate={handleValuate}
+/>
+```
+
 ---
 
-## 4. 有机体组件规范
+## 第四轮对话：有机体组件规范
 
-### 4.1 DataTable (数据表格)
+### 话题：DataTable组件
 
-**Props定义**
+**DesignArchitect**: DataTable组件用于列表展示：
 
 ```typescript
 interface DataTableProps<T> {
@@ -196,11 +217,30 @@ interface DataTableProps<T> {
 }
 ```
 
----
+**Dev**: 收藏列表如何使用这个组件？
 
-### 4.2 Modal (对话框)
+**DesignArchitect**: 
 
-**Props定义**
+```tsx
+const columns: Column<Collection>[] = [
+  { key: 'name', title: '名称', dataIndex: 'modelName' },
+  { key: 'ipSeries', title: 'IP系列', dataIndex: 'ipSeries' },
+  { key: 'price', title: '购买价格', dataIndex: 'purchasePrice' },
+  { key: 'actions', title: '操作', render: (record) => <Actions /> },
+];
+
+<DataTable
+  columns={columns}
+  data={collections}
+  rowKey="id"
+  loading={isLoading}
+  pagination={{ current: 1, pageSize: 20, total: 100 }}
+/>
+```
+
+### 话题：Modal组件
+
+**DesignArchitect**: Modal对话框组件：
 
 ```typescript
 interface ModalProps {
@@ -213,11 +253,23 @@ interface ModalProps {
 }
 ```
 
+**使用示例**:
+
+```tsx
+<Modal open={isOpen} title="添加收藏" onClose={handleClose}>
+  <CollectionForm onSubmit={handleSubmit} />
+</Modal>
+```
+
 ---
 
-## 5. 组件开发规范
+## 第五轮对话：组件开发规范
 
-### 5.1 文件结构
+### 话题：文件结构与命名
+
+**DesignArchitect**: 组件开发规范：
+
+**文件结构**:
 
 ```
 ComponentName/
@@ -226,34 +278,74 @@ ComponentName/
 ├── index.ts               # 导出
 ```
 
-### 5.2 命名规范
+**命名规范**:
 
 | 类型 | 规范 | 示例 |
 |------|------|------|
 | 组件名 | PascalCase | Button |
 | Props接口 | 组件名 + Props | ButtonProps |
 | 文件名 | PascalCase | Button.tsx |
+| Hook名 | use + 功能 | useAuth |
+| 工具函数 | camelCase | formatDate |
+
+**Dev**: 测试如何编写？
+
+**DesignArchitect**: 测试规范：
+
+```typescript
+// Button.test.tsx
+describe('Button', () => {
+  it('renders correctly', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('shows loading state', () => {
+    render(<Button loading>Submit</Button>);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('handles click', () => {
+    const onClick = jest.fn();
+    render(<Button onClick={onClick}>Click</Button>);
+    fireEvent.click(screen.getByText('Click'));
+    expect(onClick).toHaveBeenCalled();
+  });
+});
+```
 
 ---
 
-## 附录: 组件清单
+## 对话总结
+
+**DesignArchitect**: 组件规范定义完成：
+
+1. **原子组件**：Button, Input, Select, Checkbox, Switch
+2. **分子组件**：FormField, Card, SearchBar
+3. **有机体组件**：DataTable, Modal, CollectionList
+4. **开发规范**：文件结构、命名规范、测试规范
+
+**Dev**: 规范清晰，我开始实现组件库。
+
+**QA**: 我会为每个组件编写测试用例。
+
+---
+
+## 附录：组件清单
 
 | 组件 | 类型 | 状态 |
 |------|------|------|
-| Button | Atom | 完成 |
-| Input | Atom | 完成 |
-| Select | Atom | 完成 |
-| Checkbox | Atom | 完成 |
-| Switch | Atom | 完成 |
-| FormField | Molecule | 完成 |
-| Card | Molecule | 完成 |
-| DataTable | Organism | 完成 |
-| Modal | Organism | 完成 |
+| Button | Atom | 待开发 |
+| Input | Atom | 待开发 |
+| Select | Atom | 待开发 |
+| Checkbox | Atom | 待开发 |
+| Switch | Atom | 待开发 |
+| FormField | Molecule | 待开发 |
+| Card | Molecule | 待开发 |
+| DataTable | Organism | 待开发 |
+| Modal | Organism | 待开发 |
 
 ---
 
-## 修订历史
-
-| 版本 | 日期 | 作者 | 修改内容 |
-|------|------|------|----------|
-| 1.0 | [日期] | [作者] | 初始版本 |
+**文档版本**: 1.0  
+**最后更新**: 2026年3月7日
