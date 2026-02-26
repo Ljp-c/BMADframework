@@ -1,0 +1,533 @@
+# -*- coding: utf-8 -*-
+"""
+AutoGen 智能体对话框架 - 支持用户交互模式
+============================================
+该模块实现了基于 AutoGen 的多智能体对话系统，支持：
+1. 直接模式 (direct) - 单智能体直接调用
+2. AutoGen模式 (autogen) - 多智能体协作
+3. 交互模式 (interactive) - 与用户实时对话
+4. 架构模式 (architecture) - 架构验证
+"""
+import json
+import os
+import sys
+from typing import Union, Optional, Dict, Any, List
+
+# Import from new autogen_agentchat API
+try:
+    from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
+    from autogen_agentchat.teams import RoundRobinGroupChat
+    AUTOGEN_VERSION = 2  # New API
+except ImportError:
+    try:
+        # Fallback for old autogen API
+        from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
+        AUTOGEN_VERSION = 1  # Old API
+    except ImportError:
+        print("Error: autogen package not installed. Please run: pip install pyautogen")
+        sys.exit(1)
+
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# Import loader
+from loader import MarkdownLoader
+
+# Load environment variables
+load_dotenv()
+
+# Disable Telemetry explicitly
+os.environ["OTEL_SDK_DISABLED"] = "true"
+
+
+def load_autogen_config(agent_framework_dir: str) -> dict:
+    """Load autogen_config.json configuration"""
+    config_path = os.path.join(agent_framework_dir, "autogen_config.json")
+    if os.path.exists(config_path):
+        with open(config_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def get_llm_config(config: dict) -> dict:
+    """Get LLM configuration from autogen_config with environment variable overrides"""
+    llm_cfg = config.get("llm_config", {})
+    
+    # Priority: Environment variables > Config file > Defaults
+    api_key = os.getenv("OPENAI_API_KEY") or llm_cfg.get("api_key")
+    base_url = os.getenv("OPENAI_API_BASE") or llm_cfg.get("base_url")
+    model = os.getenv("OPENAI_MODEL_NAME") or llm_cfg.get("model", "gpt-4-turbo")
+    
+    # Validate critical configuration
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not configured in environment variables or config file")
+    if not base_url:
+        raise ValueError("OPENAI_API_BASE not configured in environment variables or config file")
+    
+    return {
+        "model": model,
+        "api_key": api_key,
+        "base_url": base_url,
+        "timeout": llm_cfg.get("timeout", 120),
+        "temperature": llm_cfg.get("temperature", 0.7),
+        "max_tokens": llm_cfg.get("max_tokens", 2048)
+    }
+
+
+def create_interactive_user_proxy(config: dict) -> UserProxyAgent:
+    """Create a UserProxyAgent with interactive user input mode"""
+    user_config = config.get("user_interaction", {})
+    human_input_mode = user_config.get("human_input_mode", "ALWAYS")
+    
+    def is_termination_msg(msg):
+        """Check if message indicates termination"""
+        try:
+            content = msg.get("content", "") if isinstance(msg, dict) else str(msg)
+            termination_keywords = config.get("conversation_settings", {}).get("termination_keywords", [])
+            if isinstance(content, str):
+                content_lower = content.lower().strip()
+                for keyword in termination_keywords:
+                    if keyword.lower() in content_lower:
+                        return True
+        except Exception as e:
+            print(f"Error checking termination message: {str(e)}")
+        return False
+    
+    return UserProxyAgent(
+        name="User",
+        human_input_mode=human_input_mode,
+        max_consecutive_auto_reply=user_config.get("max_consecutive_auto_reply", 10),
+        is_termination_msg=is_termination_msg if user_config.get("is_termination_msg", True) else None,
+        code_execution_config=user_config.get("code_execution_config", False),
+        system_message="你是用户代理，负责与用户进行交互，并将用户需求传达给其他智能体。在对话中，你需要倾听用户的输入，并在适当时候引导用户完成目标。"
+    )
+
+
+def create_autogen_agent_from_markdown(
+    file_path: str, 
+    agent_name: str, 
+    llm_config: dict,
+    is_assistant: bool = True
+) -> Union[AssistantAgent, UserProxyAgent]:
+    """Create AutoGen Agent from Markdown file with LLM config"""
+    try:
+        data = MarkdownLoader.parse_persona(file_path)
+        
+        # Build LLM config for autogen
+        autogen_llm_config = {
+            "config_list": [{
+                "model": llm_config["model"],
+                "api_key": llm_config["api_key"],
+                "base_url": llm_config["base_url"],
+                "timeout": llm_config["timeout"],
+                "temperature": llm_config["temperature"],
+                "max_tokens": llm_config["max_tokens"]
+            }]
+        }
+        
+        system_message = f"""Role: {data['role']}
+
+Goal: {data['goal']}
+
+Backstory: {data['backstory']}"""
+        
+        if is_assistant:
+            return AssistantAgent(
+                name=agent_name,
+                system_message=system_message,
+                llm_config=autogen_llm_config
+            )
+        else:
+            return UserProxyAgent(
+                name=agent_name,
+                system_message=system_message,
+                human_input_mode="NEVER",
+                code_execution_config=False,
+                llm_config=autogen_llm_config
+            )
+    except Exception as e:
+        print(f"Error creating agent from {file_path}: {str(e)}")
+        # Return a minimal agent on error
+        if is_assistant:
+            return AssistantAgent(
+                name=agent_name,
+                system_message=f"You are {agent_name}, an AI assistant.",
+                llm_config={"config_list": [{"model": "gpt-3.5-turbo", "api_key": ""}]}
+            )
+        raise
+
+
+def run_direct(personas_dir: str, tasks_dir: str, project_context: str):
+    """Run AutoGen agents in direct mode"""
+    model = os.getenv("OPENAI_MODEL_NAME", "gpt-4-turbo")
+    client = OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_API_BASE"),
+        timeout=120.0
+    )
+
+    pm_file = os.path.join(personas_dir, 'pm.md')
+    if not os.path.exists(pm_file):
+        print(f"Error: Persona file not found at {pm_file}")
+        return
+
+    prd_task_file = os.path.join(tasks_dir, 'create-prd.md')
+    if not os.path.exists(prd_task_file):
+        print(f"Error: Task file not found at {prd_task_file}")
+        return
+
+    persona_text = MarkdownLoader.load_file(pm_file)
+    task_text = MarkdownLoader.load_file(prd_task_file)
+    user_content = f"{task_text}\n\nProject context:\n{project_context}"
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": persona_text},
+            {"role": "user", "content": user_content}
+        ],
+        max_tokens=800
+    )
+
+    output = response.choices[0].message.content
+    print("\nResult:")
+    print(output)
+
+
+def load_architecture_config(project_root: str):
+    config_path = os.path.join(project_root, "agent_framework", "agent_architecture.json")
+    if not os.path.exists(config_path):
+        print(f"Error: Architecture config not found at {config_path}")
+        return None
+    with open(config_path, "r", encoding="utf-8") as file_handle:
+        return json.load(file_handle)
+
+
+def validate_architecture_files(config: dict, project_root: str):
+    paths = set()
+    for agent in config.get("agents", []):
+        if agent.get("persona_file"):
+            paths.add(agent["persona_file"])
+    for phase in config.get("phases", []):
+        for item in phase.get("inputs", []):
+            if isinstance(item, str):
+                paths.add(item)
+        for item in phase.get("outputs", []):
+            if isinstance(item, str):
+                paths.add(item)
+        if phase.get("task_file"):
+            paths.add(phase["task_file"])
+        for item in phase.get("gates", []):
+            paths.add(item)
+    missing = []
+    for relative_path in sorted(paths):
+        full_path = os.path.join(project_root, relative_path)
+        if not os.path.exists(full_path):
+            missing.append(relative_path)
+    return missing
+
+
+def print_architecture_summary(config: dict):
+    agents = config.get("agents", [])
+    phases = config.get("phases", [])
+    print("\nArchitecture Summary")
+    print(f"Agents: {len(agents)}")
+    print(f"Phases: {len(phases)}")
+    for phase in phases:
+        print(f"- {phase.get('id')}: {phase.get('name')} -> {phase.get('owner')}")
+
+
+def create_agents_from_config(config: dict, project_root: str, llm_config: dict):
+    """Create AutoGen agents from configuration with LLM config"""
+    agents_map = {}
+    for agent_cfg in config.get("agents", []):
+        agent_id = agent_cfg.get("id")
+        persona_file = agent_cfg.get("persona_file")
+        if not agent_id or not persona_file:
+            continue
+        persona_path = os.path.join(project_root, persona_file)
+        if not os.path.exists(persona_path):
+            print(f"Error: Persona file not found at {persona_path}")
+            continue
+        agents_map[agent_id] = create_autogen_agent_from_markdown(
+            persona_path, 
+            agent_cfg.get("name", agent_id),
+            llm_config,
+            is_assistant=True
+        )
+    return agents_map
+
+
+def filter_phases(phases: list[dict]):
+    start_phase = os.getenv("START_PHASE")
+    end_phase = os.getenv("END_PHASE")
+    if not start_phase and not end_phase:
+        return phases
+    ids = [phase.get("id") for phase in phases]
+    if start_phase and start_phase not in ids:
+        return []
+    if end_phase and end_phase not in ids:
+        return []
+    start_index = ids.index(start_phase) if start_phase else 0
+    end_index = ids.index(end_phase) if end_phase else len(phases) - 1
+    if start_index > end_index:
+        return []
+    return phases[start_index : end_index + 1]
+
+
+def create_tasks_from_config(config: dict, project_root: str, agents_map: dict):
+    """Extract task descriptions from configuration for AutoGen agents"""
+    tasks = []
+    phases = filter_phases(config.get("phases", []))
+    for phase in phases:
+        task_file = phase.get("task_file")
+        owner_id = phase.get("owner")
+        if not task_file or not owner_id:
+            continue
+        agent = agents_map.get(owner_id)
+        if not agent:
+            print(f"Error: Agent not found for phase {phase.get('id')}")
+            continue
+        task_path = os.path.join(project_root, task_file)
+        if not os.path.exists(task_path):
+            print(f"Error: Task file not found at {task_path}")
+            continue
+        data = MarkdownLoader.parse_task(task_path)
+        tasks.append({
+            "agent_id": owner_id,
+            "agent_name": agent.name,
+            "description": data['description'],
+            "expected_output": data['expected_output']
+        })
+    return tasks
+
+
+def run_interactive_mode(config: dict, project_root: str, llm_config: dict):
+    """
+    运行交互式对话模式
+    该模式支持用户与智能体进行自然流畅的多轮对话
+    """
+    conversation_settings = config.get("conversation_settings", {})
+    welcome_message = conversation_settings.get("welcome_message", 
+        "欢迎使用智能体对话系统！请输入您的需求或问题，我将协调各智能体为您提供帮助。")
+    termination_keywords = conversation_settings.get("termination_keywords", ["exit", "quit", "退出", "结束"])
+    
+    print("\n" + "=" * 60)
+    print("🤖 AutoGen 智能体对话系统 - 交互模式")
+    print("=" * 60)
+    print(f"\n{welcome_message}\n")
+    print("提示: 输入 'exit'、'quit'、'退出' 或 '结束' 可退出对话\n")
+    print("-" * 60)
+    
+    # 加载架构配置
+    arch_config = load_architecture_config(project_root)
+    if not arch_config:
+        print("错误: 无法加载架构配置")
+        return
+    
+    # 创建用户代理（启用交互模式）
+    user_proxy = create_interactive_user_proxy(config)
+    
+    # 创建智能体
+    agents_map = create_agents_from_config(arch_config, project_root, llm_config)
+    
+    # 获取群聊配置
+    group_chat_config = config.get("group_chat_config", {})
+    max_round = group_chat_config.get("max_round", 20)
+    
+    # 创建群聊
+    all_agents = [user_proxy] + list(agents_map.values())
+    group_chat = GroupChat(
+        agents=all_agents,
+        messages=[],
+        max_round=max_round,
+        speaker_selection_method=group_chat_config.get("speaker_selection_method", "auto"),
+        allow_repeat_speaker=group_chat_config.get("allow_repeat_speaker", False)
+    )
+    
+    manager = GroupChatManager(
+        groupchat=group_chat,
+        llm_config={
+            "config_list": [{
+                "model": llm_config["model"],
+                "api_key": llm_config["api_key"],
+                "base_url": llm_config["base_url"],
+                "timeout": llm_config["timeout"]
+            }]
+        }
+    )
+    
+    print("\n对话已开始。请输入您的消息:\n")
+    
+    # 开始对话循环
+    while True:
+        try:
+            # 获取用户输入
+            user_input = input("👤 您: ").strip()
+            
+            # 检查退出条件
+            if user_input.lower() in [k.lower() for k in termination_keywords]:
+                print("\n感谢使用智能体对话系统，再见！👋")
+                break
+            
+            if not user_input:
+                continue
+            
+            # 发起对话
+            print("\n" + "-" * 60)
+            user_proxy.initiate_chat(
+                manager,
+                message=user_input,
+                clear_history=False
+            )
+            print("-" * 60 + "\n")
+            
+        except KeyboardInterrupt:
+            print("\n\n对话已中断。再见！👋")
+            break
+        except Exception as e:
+            print(f"\n❌ 发生错误: {str(e)}")
+            continue
+
+
+def run_autogen_mode(config: dict, project_root: str, llm_config: dict):
+    """Run AutoGen multi-agent collaborative mode"""
+    arch_config = load_architecture_config(project_root)
+    if not arch_config:
+        return
+    agents_map = create_agents_from_config(arch_config, project_root, llm_config)
+    tasks = create_tasks_from_config(arch_config, project_root, agents_map)
+    if not tasks:
+        print("Error: No tasks were created for AutoGen execution.")
+        return
+    
+    # 创建用户代理
+    user_proxy = create_interactive_user_proxy(config)
+    
+    # 获取所有智能体
+    all_agents = [user_proxy] + list(agents_map.values())
+    
+    # 创建群聊
+    group_chat_config = config.get("group_chat_config", {})
+    group_chat = GroupChat(
+        agents=all_agents,
+        messages=[],
+        max_round=group_chat_config.get("max_round", 10),
+        speaker_selection_method=group_chat_config.get("speaker_selection_method", "auto")
+    )
+    
+    manager = GroupChatManager(
+        groupchat=group_chat,
+        llm_config={
+            "config_list": [{
+                "model": llm_config["model"],
+                "api_key": llm_config["api_key"],
+                "base_url": llm_config["base_url"],
+                "timeout": llm_config["timeout"]
+            }]
+        }
+    )
+    
+    print("\nStarting AutoGen Group Chat...")
+    print("----------------------------------------")
+    
+    # 执行任务
+    task_prompt = "\n\n".join([
+        f"Task for {task['agent_name']}: {task['description']}\nExpected output: {task['expected_output']}"
+        for task in tasks
+    ])
+    
+    response = user_proxy.initiate_chat(
+        manager,
+        message=f"Please complete the following tasks:\n\n{task_prompt}\n\nProject context: A code assistant tool based on AI."
+    )
+    
+    print("\n----------------------------------------")
+    print("AutoGen execution finished.")
+    print("Group chat history:")
+    for msg in group_chat.messages:
+        print(f"{msg.get('name', 'Unknown')}: {msg.get('content', '')[:100]}...")
+
+
+def main():
+    """
+    主函数 - 根据运行模式执行相应的智能体对话流程
+    
+    运行模式:
+    - direct: 直接模式，单智能体直接调用
+    - autogen: 多智能体协作模式
+    - interactive: 交互模式，与用户实时对话
+    - architecture: 架构验证模式
+    """
+    try:
+        # 配置 AutoGen 支持 OpenAI 兼容 API
+        if os.getenv("OPENAI_API_BASE"):
+            os.environ["OPENAI_API_BASE"] = os.getenv("OPENAI_API_BASE")
+        if os.getenv("OPENAI_MODEL_NAME"):
+            os.environ["OPENAI_MODEL_NAME"] = os.getenv("OPENAI_MODEL_NAME")
+        
+        # 路径配置
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        agent_framework_dir = os.path.join(project_root, 'agent_framework')
+        personas_dir = os.path.join(project_root, 'project', '.bmad', 'personas')
+        tasks_dir = os.path.join(project_root, 'project', '.bmad', 'tasks')
+        
+        print(f"🚀 AutoGen Framework Starting...")
+        print(f"Project root: {project_root}")
+        print(f"Loading personas from: {personas_dir}")
+        print(f"Loading tasks from: {tasks_dir}")
+        
+        # 加载 AutoGen 配置
+        autogen_config = load_autogen_config(agent_framework_dir)
+        print(f"AutoGen config version: {autogen_config.get('version', 'unknown')}")
+        
+        try:
+            llm_config = get_llm_config(autogen_config)
+            print(f"✓ LLM Config loaded: {llm_config['model']} @ {llm_config['base_url']}")
+        except ValueError as e:
+            print(f"❌ Configuration Error: {str(e)}")
+            print("\nPlease configure your API credentials in .env file:")
+            print("  OPENAI_API_KEY=your-api-key")
+            print("  OPENAI_API_BASE=https://api.example.com/v1")
+            print("  OPENAI_MODEL_NAME=model-name")
+            return
+
+        run_mode = os.getenv("RUN_MODE", "interactive").lower()
+        print(f"Running in mode: {run_mode}")
+        
+        if run_mode == "architecture":
+            config = load_architecture_config(project_root)
+            if not config:
+                return
+            print_architecture_summary(config)
+            missing = validate_architecture_files(config, project_root)
+            if missing:
+                print("\n⚠️  Missing files:")
+                for item in missing:
+                    print(f"  - {item}")
+            else:
+                print("\n✓ All referenced files exist.")
+        
+        elif run_mode == "autogen":
+            run_autogen_mode(autogen_config, project_root, llm_config)
+        
+        elif run_mode == "interactive":
+            run_interactive_mode(autogen_config, project_root, llm_config)
+        
+        else:  # direct mode
+            run_direct(personas_dir, tasks_dir, "A code assistant tool based on AI, designed to help developers write code more efficiently.")
+        
+        print("\n✓ Framework execution completed successfully.")
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Framework interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Fatal Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

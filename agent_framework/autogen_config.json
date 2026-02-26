@@ -3,9 +3,9 @@
   "framework": "autogen",
   "llm_config": {
     "model": "LongCat-Flash-Thinking",
-    "api_key": "${ak_2jA5hc9ZF4ug9yJ7xl6JI8rs3wg7K}",
-    "base_url": "${https://api.longcat.chat/openai}",
-    "timeout": 120.0,
+    "api_key": null,
+    "base_url": "https://api.longcat.chat/openai",
+    "timeout": 120,
     "temperature": 0.7,
     "max_tokens": 2048
   },
