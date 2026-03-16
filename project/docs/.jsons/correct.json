@@ -1,0 +1,348 @@
+
+{
+  "document_info": {
+    "problem_id": "",
+    "discovered_date": "",
+    "discovered_by": "",
+    "problem_type": "",
+    "priority": "",
+    "status": "",
+    "participants": [],
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step1_problem_identification": {
+    "phenomenon": {
+      "description": "",
+      "affected_functions": [],
+      "affected_users": "",
+      "impact_level": ""
+    },
+    "reproduction_steps": [
+      {
+        "step_number": "",
+        "description": ""
+      }
+    ],
+    "root_cause_analysis": {
+      "analysis_method": "",
+      "root_cause": "",
+      "analysis_process": [
+        {
+          "level": "",
+          "question": "",
+          "answer": ""
+        }
+      ]
+    },
+    "impact_assessment": {
+      "scope": "",
+      "severity": "",
+      "affected_modules": [],
+      "affected_users_count": ""
+    },
+    "priority_determination": {
+      "priority": "",
+      "reason": ""
+    },
+    "current_state": {
+      "code_issues": [
+        {
+          "issue_type": "",
+          "description": "",
+          "impact": ""
+        }
+      ],
+      "technical_debt": [
+        {
+          "debt_item": "",
+          "description": "",
+          "priority": ""
+        }
+      ]
+    }
+  },
+
+  "step2_solution_development": {
+    "solution_options": [
+      {
+        "solution_name": "",
+        "description": "",
+        "advantages": [],
+        "disadvantages": [],
+        "workload": ""
+      }
+    ],
+    "recommended_solution": {
+      "solution_name": "",
+      "reason": ""
+    },
+    "feasibility_assessment": {
+      "technical_feasibility": "",
+      "resource_feasibility": "",
+      "time_feasibility": "",
+      "risk_assessment": ""
+    },
+    "resource_requirements": {
+      "personnel": [],
+      "tools": [],
+      "infrastructure": [],
+      "budget": ""
+    },
+    "team_approval": {
+      "approved": false,
+      "approvers": [
+        {
+          "role": "",
+          "name": "",
+          "date": "",
+          "opinion": ""
+        }
+      ]
+    },
+    "refactoring_overview": {
+      "goal": "",
+      "scope": "",
+      "reason": ""
+    },
+    "target_state": {
+      "architecture_improvement": "",
+      "code_improvement": "",
+      "performance_improvement": ""
+    },
+    "refactoring_strategy": {
+      "principles": [],
+      "phases": [
+        {
+          "phase_name": "",
+          "goal": "",
+          "tasks": [],
+          "verification": ""
+        }
+      ]
+    }
+  },
+
+  "step3_plan_development": {
+    "detailed_plan": {
+      "overview": "",
+      "start_date": "",
+      "end_date": "",
+      "milestones": []
+    },
+    "task_breakdown": [
+      {
+        "task": "",
+        "responsible_person": "",
+        "start_date": "",
+        "end_date": "",
+        "status": "",
+        "dependencies": []
+      }
+    ],
+    "workload_estimation": {
+      "total_hours": "",
+      "breakdown": [
+        {
+          "task": "",
+          "estimated_hours": ""
+        }
+      ]
+    },
+    "timeline": [
+      {
+        "phase": "",
+        "start_date": "",
+        "end_date": "",
+        "responsible_person": "",
+        "deliverables": []
+      }
+    ],
+    "risk_assessment": [
+      {
+        "risk": "",
+        "probability": "",
+        "impact": "",
+        "mitigation_measures": "",
+        "contingency_plan": ""
+      }
+    ],
+    "testing_strategy": {
+      "existing_tests": {
+        "unit_tests": "",
+        "integration_tests": "",
+        "e2e_tests": ""
+      },
+      "test_supplements": [],
+      "regression_tests": []
+    },
+    "rollback_plan": {
+      "rollback_conditions": "",
+      "rollback_steps": []
+    }
+  },
+
+  "step4_execution_implementation": {
+    "execution_log": [
+      {
+        "date": "",
+        "task": "",
+        "executor": "",
+        "status": "",
+        "notes": ""
+      }
+    ],
+    "progress_tracking": {
+      "overall_progress": "",
+      "completed_tasks": [],
+      "in_progress_tasks": [],
+      "blocked_tasks": [],
+      "upcoming_tasks": []
+    },
+    "issues_encountered": [
+      {
+        "issue": "",
+        "discovered_date": "",
+        "severity": "",
+        "resolution": "",
+        "resolved_date": ""
+      }
+    ],
+    "change_records": [
+      {
+        "change_id": "",
+        "date": "",
+        "description": "",
+        "reason": "",
+        "impact": "",
+        "approved_by": ""
+      }
+    ],
+    "daily_standup": [
+      {
+        "date": "",
+        "completed_yesterday": [],
+        "planned_today": [],
+        "blockers": []
+      }
+    ]
+  },
+
+  "step5_verification_confirmation": {
+    "verification_checklist": [
+      {
+        "verification_item": "",
+        "verified": false,
+        "verified_by": "",
+        "verified_date": "",
+        "notes": ""
+      }
+    ],
+    "regression_testing": {
+      "test_scope": "",
+      "test_cases": [
+        {
+          "test_case": "",
+          "status": "",
+          "notes": ""
+        }
+      ],
+      "overall_result": ""
+    },
+    "stakeholder_confirmation": [
+      {
+        "stakeholder": "",
+        "role": "",
+        "confirmed": false,
+        "confirmation_date": "",
+        "feedback": ""
+      }
+    ],
+    "documentation_updates": [
+      {
+        "document": "",
+        "update_description": "",
+        "updated_by": "",
+        "updated_date": ""
+      }
+    ],
+    "success_criteria": [
+      {
+        "criterion": "",
+        "met": false,
+        "evidence": ""
+      }
+    ],
+    "delivery_acceptance": {
+      "problem_resolved": false,
+      "regression_passed": false,
+      "documentation_updated": false,
+      "team_confirmed": false,
+      "lessons_summarized": false
+    }
+  },
+
+  "step6_summary_retrospective": {
+    "problem_review": {
+      "problem_description": "",
+      "background": "",
+      "timeline": ""
+    },
+    "root_cause_summary": "",
+    "resolution_process": {
+      "key_steps": [],
+      "key_decisions": [],
+      "timeline": ""
+    },
+    "lessons_learned": {
+      "what_went_well": [],
+      "what_needs_improvement": [],
+      "prevention_measures": []
+    },
+    "best_practices_update": [
+      {
+        "practice": "",
+        "description": "",
+        "applicable_scenarios": []
+      }
+    ],
+    "knowledge_sharing": {
+      "shared_to_team": false,
+      "sharing_method": "",
+      "sharing_date": "",
+      "materials": []
+    },
+    "prevention_actions": [
+      {
+        "action_item": "",
+        "responsible_person": "",
+        "due_date": "",
+        "status": ""
+      }
+    ],
+    "quality_checklist": {
+      "root_cause_identified": false,
+      "solution_evaluated": false,
+      "implementation_plan_made": false,
+      "risks_assessed": false,
+      "verification_criteria_defined": false,
+      "documentation_updated": false,
+      "team_notified": false
+    },
+    "related_documents": [],
+    "final_status": {
+      "resolution_date": "",
+      "resolved_by": "",
+      "final_notes": ""
+    }
+  }
+}
+
+

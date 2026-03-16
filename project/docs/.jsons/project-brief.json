@@ -1,0 +1,980 @@
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/project-brief.schema.json",
+  "title": "项目简报",
+  "description": "供AI系统填写的项目简报文档Schema，基于6步流程生成",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metadata",
+    "step1_收集信息",
+    "step2_定义问题陈述",
+    "step3_确定项目目标",
+    "step4_定义项目范围",
+    "step5_识别约束和假设",
+    "step6_编写项目简报"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "文档元数据",
+      "additionalProperties": false,
+      "required": ["schema_version", "generated_by", "generated_at"],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "generated_by": {
+          "type": "string",
+          "description": "生成此文档的AI系统标识"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "文档生成时间ISO8601格式"
+        }
+      }
+    },
+
+    "step1_收集信息": {
+      "type": "object",
+      "description": "Step 1: 收集信息 - 共5个检查项",
+      "additionalProperties": false,
+      "required": [
+        "识别所有利益相关者",
+        "进行利益相关者访谈",
+        "收集业务背景信息",
+        "了解现有系统和流程",
+        "收集市场数据和竞争分析"
+      ],
+      "properties": {
+        "识别所有利益相关者": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean",
+              "description": "此检查项是否完成"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["角色", "姓名", "职责", "联系方式"],
+                "properties": {
+                  "角色": {
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": ["项目发起人", "产品经理", "技术负责人", "业务负责人"]
+                  },
+                  "姓名": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "职责": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "联系方式": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "进行利益相关者访谈": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["访谈对象", "访谈日期", "关键发现"],
+                "properties": {
+                  "访谈对象": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "访谈日期": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "关键发现": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "收集业务背景信息": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "string",
+              "minLength": 10,
+              "description": "业务背景详细描述"
+            }
+          }
+        },
+        "了解现有系统和流程": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["现有系统", "现有流程"],
+              "properties": {
+                "现有系统": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "现有流程": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "收集市场数据和竞争分析": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["市场数据", "竞争分析"],
+              "properties": {
+                "市场数据": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "竞争分析": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step2_定义问题陈述": {
+      "type": "object",
+      "description": "Step 2: 定义问题陈述 - 共4个检查项",
+      "additionalProperties": false,
+      "required": [
+        "清晰描述业务问题",
+        "量化问题影响",
+        "识别问题根本原因",
+        "确认问题优先级"
+      ],
+      "properties": {
+        "清晰描述业务问题": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "string",
+              "minLength": 20,
+              "description": "业务问题的清晰描述"
+            }
+          }
+        },
+        "量化问题影响": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["影响描述", "量化指标", "影响数值"],
+              "properties": {
+                "影响描述": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "量化指标": {
+                  "type": "string",
+                  "minLength": 1,
+                  "examples": ["收入损失", "效率降低", "客户流失率"]
+                },
+                "影响数值": {
+                  "type": "string",
+                  "minLength": 1,
+                  "examples": ["每月损失100万元", "效率降低30%"]
+                }
+              }
+            }
+          }
+        },
+        "识别问题根本原因": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "确认问题优先级": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "string",
+              "enum": ["高", "中", "低"]
+            }
+          }
+        }
+      }
+    },
+
+    "step3_确定项目目标": {
+      "type": "object",
+      "description": "Step 3: 确定项目目标 - 共4个检查项",
+      "additionalProperties": false,
+      "required": [
+        "定义SMART目标",
+        "识别成功标准",
+        "确定关键绩效指标KPI",
+        "获得利益相关者认可"
+      ],
+      "properties": {
+        "定义SMART目标": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "目标名称",
+                  "Specific_具体的",
+                  "Measurable_可衡量的",
+                  "Achievable_可实现的",
+                  "Relevant_相关的",
+                  "TimeBound_有时限的"
+                ],
+                "properties": {
+                  "目标名称": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "Specific_具体的": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "Measurable_可衡量的": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "Achievable_可实现的": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "Relevant_相关的": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "TimeBound_有时限的": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "识别成功标准": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["标准", "衡量方式", "目标值"],
+                "properties": {
+                  "标准": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "衡量方式": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "目标值": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "确定关键绩效指标KPI": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["KPI名称", "当前值", "目标值"],
+                "properties": {
+                  "KPI名称": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "当前值": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "目标值": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "获得利益相关者认可": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["是否认可", "认可人员", "认可日期"],
+              "properties": {
+                "是否认可": {
+                  "type": "boolean"
+                },
+                "认可人员": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "认可日期": {
+                  "type": "string",
+                  "format": "date"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step4_定义项目范围": {
+      "type": "object",
+      "description": "Step 4: 定义项目范围 - 共4个检查项",
+      "additionalProperties": false,
+      "required": [
+        "列出范围内功能",
+        "列出范围外功能",
+        "识别关键里程碑",
+        "定义项目边界"
+      ],
+      "properties": {
+        "列出范围内功能": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "列出范围外功能": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "识别关键里程碑": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["里程碑名称", "日期", "交付物"],
+                "properties": {
+                  "里程碑名称": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "日期": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "交付物": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "定义项目边界": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["开始边界", "结束边界", "接口边界"],
+              "properties": {
+                "开始边界": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "结束边界": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "接口边界": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step5_识别约束和假设": {
+      "type": "object",
+      "description": "Step 5: 识别约束和假设 - 共5个检查项",
+      "additionalProperties": false,
+      "required": [
+        "时间约束",
+        "预算约束",
+        "技术约束",
+        "资源约束",
+        "关键假设列表"
+      ],
+      "properties": {
+        "时间约束": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["项目开始日期", "项目截止日期", "约束说明"],
+              "properties": {
+                "项目开始日期": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "项目截止日期": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "约束说明": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "预算约束": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["总预算", "货币单位", "约束说明"],
+              "properties": {
+                "总预算": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "货币单位": {
+                  "type": "string",
+                  "enum": ["CNY", "USD", "EUR", "GBP", "JPY"],
+                  "default": "CNY"
+                },
+                "约束说明": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "技术约束": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["技术限制", "约束说明"],
+              "properties": {
+                "技术限制": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "约束说明": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "资源约束": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["人力资源限制", "设备资源限制", "约束说明"],
+              "properties": {
+                "人力资源限制": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "设备资源限制": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "约束说明": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "关键假设列表": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step6_编写项目简报": {
+      "type": "object",
+      "description": "Step 6: 编写项目简报 - 共4个检查项",
+      "additionalProperties": false,
+      "required": [
+        "按模板结构编写",
+        "确保内容清晰简洁",
+        "获得利益相关者审核",
+        "定稿并发布"
+      ],
+      "properties": {
+        "按模板结构编写": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "description": "项目简报完整内容 - 对应模板9个章节",
+              "additionalProperties": false,
+              "required": [
+                "项目概述",
+                "项目目标",
+                "项目范围",
+                "利益相关者",
+                "约束条件",
+                "假设条件",
+                "风险识别",
+                "关键里程碑",
+                "审批记录"
+              ],
+              "properties": {
+                "项目概述": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["项目名称", "项目背景", "问题陈述"],
+                  "properties": {
+                    "项目名称": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "项目背景": {
+                      "type": "string",
+                      "minLength": 10
+                    },
+                    "问题陈述": {
+                      "type": "string",
+                      "minLength": 10
+                    }
+                  }
+                },
+                "项目目标": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["主要目标", "成功标准"],
+                  "properties": {
+                    "主要目标": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "成功标准": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["标准", "衡量方式", "目标值"],
+                        "properties": {
+                          "标准": { "type": "string", "minLength": 1 },
+                          "衡量方式": { "type": "string", "minLength": 1 },
+                          "目标值": { "type": "string", "minLength": 1 }
+                        }
+                      }
+                    }
+                  }
+                },
+                "项目范围": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["范围内", "范围外"],
+                  "properties": {
+                    "范围内": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": { "type": "string", "minLength": 1 }
+                    },
+                    "范围外": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                },
+                "利益相关者": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["角色", "姓名", "职责", "联系方式"],
+                    "properties": {
+                      "角色": { "type": "string", "minLength": 1 },
+                      "姓名": { "type": "string", "minLength": 1 },
+                      "职责": { "type": "string", "minLength": 1 },
+                      "联系方式": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                },
+                "约束条件": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["时间约束", "预算约束", "技术约束", "资源约束"],
+                  "properties": {
+                    "时间约束": { "type": "string", "minLength": 1 },
+                    "预算约束": { "type": "string", "minLength": 1 },
+                    "技术约束": { "type": "string", "minLength": 1 },
+                    "资源约束": { "type": "string", "minLength": 1 }
+                  }
+                },
+                "假设条件": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string", "minLength": 1 }
+                },
+                "风险识别": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["风险", "可能性", "影响", "缓解措施"],
+                    "properties": {
+                      "风险": { "type": "string", "minLength": 1 },
+                      "可能性": { "type": "string", "enum": ["高", "中", "低"] },
+                      "影响": { "type": "string", "enum": ["高", "中", "低"] },
+                      "缓解措施": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                },
+                "关键里程碑": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["里程碑", "日期", "交付物"],
+                    "properties": {
+                      "里程碑": { "type": "string", "minLength": 1 },
+                      "日期": { "type": "string", "format": "date" },
+                      "交付物": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                },
+                "审批记录": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["角色", "姓名", "日期", "签名"],
+                    "properties": {
+                      "角色": { "type": "string", "minLength": 1 },
+                      "姓名": { "type": "string", "minLength": 1 },
+                      "日期": { "type": "string", "format": "date" },
+                      "签名": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "确保内容清晰简洁": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["清晰度检查", "简洁度检查", "完整性检查"],
+              "properties": {
+                "清晰度检查": { "type": "boolean" },
+                "简洁度检查": { "type": "boolean" },
+                "完整性检查": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "获得利益相关者审核": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["审核人角色", "审核人姓名", "审核日期", "审核意见", "是否通过"],
+                "properties": {
+                  "审核人角色": { "type": "string", "minLength": 1 },
+                  "审核人姓名": { "type": "string", "minLength": 1 },
+                  "审核日期": { "type": "string", "format": "date" },
+                  "审核意见": { "type": "string", "minLength": 1 },
+                  "是否通过": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "定稿并发布": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["completed", "data"],
+          "properties": {
+            "completed": {
+              "type": "boolean"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["版本号", "定稿日期", "发布状态"],
+              "properties": {
+                "版本号": {
+                  "type": "string",
+                  "pattern": "^v?\\d+\\.\\d+(\\.\\d+)?$",
+                  "examples": ["1.0.0", "v1.0"]
+                },
+                "定稿日期": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "发布状态": {
+                  "type": "string",
+                  "enum": ["草稿", "审核中", "已定稿", "已发布"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+---
+

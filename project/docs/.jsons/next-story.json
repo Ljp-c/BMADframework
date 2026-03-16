@@ -1,0 +1,378 @@
+
+{
+  "document_info": {
+    "project_name": "",
+    "version": "",
+    "author": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step1_identify_epic": {
+    "prd_analysis": {
+      "prd_document_url": "",
+      "functional_modules": [
+        {
+          "module_name": "",
+          "description": "",
+          "priority": "",
+          "features": []
+        }
+      ],
+      "key_requirements": []
+    },
+    "epic_definitions": [
+      {
+        "epic_id": "",
+        "epic_name": "",
+        "description": "",
+        "business_value": "",
+        "boundary": {
+          "in_scope": [],
+          "out_of_scope": []
+        },
+        "success_criteria": [],
+        "priority": "",
+        "estimated_duration": ""
+      }
+    ],
+    "epic_directory_structure": {
+      "structure_diagram": "",
+      "epics": [
+        {
+          "epic_id": "",
+          "epic_name": "",
+          "folder_path": "",
+          "stories_count": ""
+        }
+      ]
+    }
+  },
+
+  "step2_story_splitting": {
+    "splitting_approach": {
+      "method": "",
+      "description": ""
+    },
+    "user_stories": [
+      {
+        "story_id": "",
+        "epic_id": "",
+        "title": "",
+        "description": "",
+        "splitting_method": "",
+        "invest_compliance": {
+          "independent": false,
+          "negotiable": false,
+          "valuable": false,
+          "estimable": false,
+          "small": false,
+          "testable": false
+        }
+      }
+    ],
+    "story_dependencies": [
+      {
+        "story_id": "",
+        "depends_on": [],
+        "blocked_by": [],
+        "blocks": [],
+        "dependency_type": "",
+        "dependency_description": ""
+      }
+    ],
+    "story_priorities": [
+      {
+        "story_id": "",
+        "priority": "",
+        "priority_reason": "",
+        "business_value": "",
+        "risk_level": ""
+      }
+    ],
+    "splitting_techniques": {
+      "by_workflow": [
+        {
+          "workflow_name": "",
+          "stories": []
+        }
+      ],
+      "by_user_type": [
+        {
+          "user_type": "",
+          "stories": []
+        }
+      ],
+      "by_ui_element": [
+        {
+          "ui_element": "",
+          "stories": []
+        }
+      ],
+      "by_complexity": [
+        {
+          "complexity_level": "",
+          "stories": []
+        }
+      ]
+    }
+  },
+
+  "step3_write_story_details": {
+    "stories": [
+      {
+        "story_info": {
+          "story_id": "",
+          "epic_id": "",
+          "epic_name": "",
+          "title": "",
+          "priority": "",
+          "story_points": "",
+          "status": ""
+        },
+        "user_story": {
+          "as_a": "",
+          "i_want": "",
+          "so_that": ""
+        },
+        "business_context": "",
+        "acceptance_criteria": {
+          "functional": [
+            {
+              "ac_id": "",
+              "description": "",
+              "verified": false
+            }
+          ],
+          "non_functional": {
+            "performance": "",
+            "security": "",
+            "accessibility": ""
+          }
+        },
+        "technical_notes": {
+          "frontend_implementation": [],
+          "backend_implementation": [],
+          "database_changes": [],
+          "api_interfaces": [
+            {
+              "endpoint": "",
+              "method": "",
+              "description": ""
+            }
+          ]
+        },
+        "dependencies": {
+          "predecessors": [
+            {
+              "story_id": "",
+              "description": ""
+            }
+          ],
+          "successors": [
+            {
+              "story_id": "",
+              "description": ""
+            }
+          ]
+        },
+        "test_scenarios": {
+          "positive_scenarios": [],
+          "negative_scenarios": [],
+          "edge_cases": []
+        },
+        "ui_ux_reference": {
+          "prototype_url": "",
+          "design_url": "",
+          "screenshots": []
+        },
+        "task_breakdown": [
+          {
+            "task_id": "",
+            "task_description": "",
+            "assignee": "",
+            "estimation": "",
+            "status": ""
+          }
+        ],
+        "notes": ""
+      }
+    ],
+    "story_points_reference": [
+      {
+        "points": "",
+        "complexity": "",
+        "workload": "",
+        "risk": ""
+      }
+    ]
+  },
+
+  "step4_story_refinement": {
+    "refinement_sessions": [
+      {
+        "session_date": "",
+        "participants": [],
+        "stories_discussed": [],
+        "outcomes": []
+      }
+    ],
+    "team_discussions": [
+      {
+        "story_id": "",
+        "discussion_date": "",
+        "participants": [],
+        "discussion_points": [],
+        "decisions_made": [],
+        "action_items": []
+      }
+    ],
+    "technical_feasibility": [
+      {
+        "story_id": "",
+        "feasibility_status": "",
+        "technical_concerns": [],
+        "proposed_solutions": [],
+        "risks": [],
+        "mitigation_plans": []
+      }
+    ],
+    "scope_adjustments": [
+      {
+        "story_id": "",
+        "original_scope": "",
+        "adjusted_scope": "",
+        "adjustment_reason": "",
+        "impact_assessment": ""
+      }
+    ],
+    "acceptance_criteria_refinements": [
+      {
+        "story_id": "",
+        "original_criteria": [],
+        "refined_criteria": [],
+        "refinement_reason": ""
+      }
+    ]
+  },
+
+  "step5_story_readiness_check": {
+    "invest_principle_check": [
+      {
+        "story_id": "",
+        "independent": {
+          "passed": false,
+          "notes": ""
+        },
+        "negotiable": {
+          "passed": false,
+          "notes": ""
+        },
+        "valuable": {
+          "passed": false,
+          "notes": ""
+        },
+        "estimable": {
+          "passed": false,
+          "notes": ""
+        },
+        "small": {
+          "passed": false,
+          "notes": ""
+        },
+        "testable": {
+          "passed": false,
+          "notes": ""
+        },
+        "overall_passed": false
+      }
+    ],
+    "acceptance_criteria_testability": [
+      {
+        "story_id": "",
+        "criteria": [
+          {
+            "ac_id": "",
+            "description": "",
+            "is_testable": false,
+            "test_approach": "",
+            "notes": ""
+          }
+        ],
+        "overall_testable": false
+      }
+    ],
+    "dependency_confirmation": [
+      {
+        "story_id": "",
+        "dependencies_identified": false,
+        "dependencies": [
+          {
+            "dependency_id": "",
+            "dependency_type": "",
+            "status": "",
+            "resolution_plan": ""
+          }
+        ],
+        "blockers_resolved": false
+      }
+    ],
+    "team_commitment": [
+      {
+        "story_id": "",
+        "team_members": [
+          {
+            "member_name": "",
+            "role": "",
+            "committed": false,
+            "commitment_date": "",
+            "concerns": []
+          }
+        ],
+        "overall_committed": false,
+        "commitment_date": ""
+      }
+    ],
+    "readiness_summary": [
+      {
+        "story_id": "",
+        "invest_passed": false,
+        "acceptance_criteria_testable": false,
+        "dependencies_identified": false,
+        "team_committed": false,
+        "is_ready": false,
+        "ready_date": "",
+        "notes": ""
+      }
+    ],
+    "definition_of_ready": {
+      "checklist": [
+        {
+          "item": "",
+          "description": "",
+          "required": false
+        }
+      ]
+    }
+  },
+
+  "quality_checklist": {
+    "stories_follow_invest": false,
+    "acceptance_criteria_clear": false,
+    "dependencies_documented": false,
+    "technical_feasibility_confirmed": false,
+    "story_points_estimated": false,
+    "team_has_reviewed": false,
+    "stories_are_testable": false,
+    "priorities_defined": false
+  }
+}
+
+

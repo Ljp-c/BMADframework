@@ -1,0 +1,700 @@
+
+{
+  "document_info": {
+    "project_name": "",
+    "version": "",
+    "architect": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step1_requirement_analysis": {
+    "prd_analysis": {
+      "functional_requirements": [],
+      "user_stories": [],
+      "key_features": []
+    },
+    "ui_ux_analysis": {
+      "design_files_location": "",
+      "design_system_used": "",
+      "key_screens": [],
+      "interaction_patterns": []
+    },
+    "backend_api_analysis": {
+      "api_documentation_url": "",
+      "api_endpoints": [
+        {
+          "endpoint": "",
+          "method": "",
+          "description": ""
+        }
+      ],
+      "authentication_method": "",
+      "data_formats": ""
+    },
+    "technical_constraints": {
+      "constraints": [],
+      "limitations": [],
+      "dependencies": []
+    },
+    "responsive_requirements": {
+      "required": false,
+      "target_devices": [],
+      "breakpoints_needed": []
+    },
+    "browser_device_targets": {
+      "browsers": [
+        {
+          "browser_name": "",
+          "minimum_version": ""
+        }
+      ],
+      "devices": [],
+      "os_targets": []
+    },
+    "accessibility_requirements": {
+      "wcag_level": "",
+      "specific_requirements": []
+    },
+    "performance_requirements": {
+      "initial_load_time": "",
+      "time_to_interactive": "",
+      "largest_contentful_paint": "",
+      "first_input_delay": "",
+      "cumulative_layout_shift": "",
+      "other_metrics": []
+    }
+  },
+
+  "step2_technology_selection": {
+    "frontend_framework": {
+      "name": "",
+      "version": "",
+      "reason": ""
+    },
+    "state_management": {
+      "name": "",
+      "version": "",
+      "reason": ""
+    },
+    "css_solution": {
+      "name": "",
+      "version": "",
+      "reason": ""
+    },
+    "build_tool": {
+      "name": "",
+      "version": "",
+      "reason": ""
+    },
+    "testing_framework": {
+      "unit_testing": {
+        "name": "",
+        "version": ""
+      },
+      "integration_testing": {
+        "name": "",
+        "version": ""
+      },
+      "e2e_testing": {
+        "name": "",
+        "version": ""
+      }
+    },
+    "code_standards_tools": {
+      "linter": {
+        "name": "",
+        "version": ""
+      },
+      "formatter": {
+        "name": "",
+        "version": ""
+      },
+      "type_checker": {
+        "name": "",
+        "version": ""
+      }
+    },
+    "browser_compatibility_solution": {
+      "name": "",
+      "polyfills": [],
+      "transpilation_target": ""
+    },
+    "responsive_framework": {
+      "name": "",
+      "version": "",
+      "reason": ""
+    },
+    "core_technologies": [
+      {
+        "technology": "",
+        "version": "",
+        "purpose": ""
+      }
+    ],
+    "development_tools": [
+      {
+        "tool": "",
+        "purpose": ""
+      }
+    ],
+    "key_decisions": [
+      {
+        "decision": "",
+        "choice": "",
+        "reason": ""
+      }
+    ],
+    "selection_justification": ""
+  },
+
+  "step3_architecture_design": {
+    "design_goals": [],
+    "application_structure": {
+      "description": "",
+      "structure_diagram": "",
+      "directory_structure": {
+        "src": {
+          "assets": {
+            "images": "",
+            "fonts": "",
+            "icons": ""
+          },
+          "components": {
+            "atoms": "",
+            "molecules": "",
+            "organisms": ""
+          },
+          "layouts": "",
+          "pages": "",
+          "hooks": "",
+          "services": "",
+          "stores": "",
+          "utils": "",
+          "styles": {
+            "tokens": "",
+            "global": ""
+          },
+          "types": "",
+          "constants": ""
+        }
+      }
+    },
+    "routing_structure": {
+      "routing_library": "",
+      "routes": [
+        {
+          "path": "",
+          "component": "",
+          "auth_required": false,
+          "children": []
+        }
+      ],
+      "navigation_guards": [],
+      "lazy_loading_routes": []
+    },
+    "state_management_architecture": {
+      "store_structure": {
+        "user": "",
+        "ui": "",
+        "data": "",
+        "app": ""
+      },
+      "state_categories": [
+        {
+          "state_type": "",
+          "description": "",
+          "storage_location": ""
+        }
+      ],
+      "data_flow_pattern": ""
+    },
+    "api_layer_architecture": {
+      "structure": {
+        "api_client": "",
+        "services": []
+      },
+      "request_handling": {
+        "base_url": "",
+        "interceptors": [],
+        "error_handling": "",
+        "retry_strategy": ""
+      },
+      "response_handling": {
+        "data_transformation": "",
+        "caching_strategy": ""
+      }
+    },
+    "error_handling_mechanism": {
+      "error_boundary": "",
+      "global_error_handler": "",
+      "api_error_handling": "",
+      "user_feedback": ""
+    },
+    "responsive_architecture": {
+      "approach": "",
+      "breakpoint_handling": "",
+      "component_adaptation": ""
+    },
+    "architecture_clarity": "",
+    "state_management_feasibility": ""
+  },
+
+  "step4_component_system_design": {
+    "component_hierarchy": {
+      "description": "",
+      "diagram": ""
+    },
+    "atoms": [
+      {
+        "component_name": "",
+        "description": "",
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "variants": [],
+        "accessibility": ""
+      }
+    ],
+    "molecules": [
+      {
+        "component_name": "",
+        "description": "",
+        "composition": [],
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "accessibility": ""
+      }
+    ],
+    "organisms": [
+      {
+        "component_name": "",
+        "description": "",
+        "composition": [],
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "accessibility": ""
+      }
+    ],
+    "page_components": [
+      {
+        "component_name": "",
+        "description": "",
+        "route": "",
+        "layout": "",
+        "composition": []
+      }
+    ],
+    "layout_components": [
+      {
+        "component_name": "",
+        "description": "",
+        "slots": []
+      }
+    ],
+    "component_communication": {
+      "props_down": "",
+      "events_up": "",
+      "context_usage": "",
+      "state_sharing": ""
+    },
+    "component_reuse_strategy": {
+      "principles": [],
+      "composition_patterns": [],
+      "hoc_usage": "",
+      "render_props_usage": "",
+      "hooks_usage": ""
+    },
+    "component_division_rationality": ""
+  },
+
+  "step5_design_system": {
+    "design_tokens": {
+      "colors": {
+        "primary": "",
+        "secondary": "",
+        "success": "",
+        "danger": "",
+        "warning": "",
+        "info": "",
+        "neutral": {
+          "50": "",
+          "100": "",
+          "200": "",
+          "300": "",
+          "400": "",
+          "500": "",
+          "600": "",
+          "700": "",
+          "800": "",
+          "900": ""
+        },
+        "background": "",
+        "foreground": "",
+        "border": ""
+      },
+      "typography": {
+        "font_family": {
+          "base": "",
+          "heading": "",
+          "monospace": ""
+        },
+        "font_size": {
+          "xs": "",
+          "sm": "",
+          "base": "",
+          "lg": "",
+          "xl": "",
+          "2xl": "",
+          "3xl": "",
+          "4xl": ""
+        },
+        "font_weight": {
+          "light": "",
+          "normal": "",
+          "medium": "",
+          "semibold": "",
+          "bold": ""
+        },
+        "line_height": {
+          "tight": "",
+          "normal": "",
+          "relaxed": ""
+        }
+      },
+      "spacing": {
+        "xs": "",
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "xl": "",
+        "2xl": "",
+        "3xl": "",
+        "4xl": ""
+      },
+      "border_radius": {
+        "none": "",
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "full": ""
+      },
+      "shadows": {
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "xl": ""
+      },
+      "z_index": {
+        "dropdown": "",
+        "sticky": "",
+        "fixed": "",
+        "modal_backdrop": "",
+        "modal": "",
+        "popover": "",
+        "tooltip": ""
+      }
+    },
+    "color_system": {
+      "semantic_colors": [],
+      "color_palette": [],
+      "dark_mode_support": false,
+      "dark_mode_colors": {}
+    },
+    "typography_system": {
+      "scale": [],
+      "headings": [],
+      "body_text": [],
+      "special_text": []
+    },
+    "spacing_system": {
+      "base_unit": "",
+      "scale": [],
+      "usage_guidelines": ""
+    },
+    "icon_system": {
+      "icon_library": "",
+      "custom_icons": [],
+      "icon_sizes": [],
+      "usage_guidelines": ""
+    },
+    "responsive_breakpoints": [
+      {
+        "name": "",
+        "min_width": "",
+        "purpose": ""
+      }
+    ],
+    "animation_system": {
+      "transitions": {
+        "duration": {
+          "fast": "",
+          "normal": "",
+          "slow": ""
+        },
+        "easing": {
+          "ease_in": "",
+          "ease_out": "",
+          "ease_in_out": ""
+        }
+      },
+      "animations": [],
+      "motion_principles": []
+    },
+    "component_style_standards": {
+      "naming_convention": "",
+      "style_organization": "",
+      "theming_approach": ""
+    },
+    "design_system_completeness": "",
+    "responsive_design_considered": ""
+  },
+
+  "step6_performance_strategy": {
+    "loading_optimization": {
+      "code_splitting": {
+        "strategy": "",
+        "split_points": []
+      },
+      "lazy_loading": {
+        "routes": [],
+        "components": [],
+        "images": ""
+      },
+      "preloading": {
+        "critical_resources": [],
+        "prefetch_routes": []
+      },
+      "resource_compression": {
+        "minification": "",
+        "gzip": "",
+        "brotli": ""
+      },
+      "bundle_optimization": {
+        "tree_shaking": "",
+        "dead_code_elimination": "",
+        "chunk_optimization": ""
+      }
+    },
+    "rendering_optimization": {
+      "virtual_list": {
+        "enabled": false,
+        "library": "",
+        "threshold": ""
+      },
+      "debounce_throttle": {
+        "input_debounce": "",
+        "scroll_throttle": "",
+        "resize_throttle": ""
+      },
+      "memo_optimization": {
+        "react_memo": "",
+        "use_memo": "",
+        "use_callback": ""
+      },
+      "rerender_prevention": {
+        "strategies": [],
+        "tools": ""
+      }
+    },
+    "resource_optimization": {
+      "image_optimization": {
+        "formats": [],
+        "responsive_images": "",
+        "lazy_loading": ""
+      },
+      "font_optimization": {
+        "font_display": "",
+        "subset": "",
+        "preload": ""
+      },
+      "css_optimization": {
+        "critical_css": "",
+        "purge_unused": ""
+      },
+      "js_optimization": {
+        "async_defer": "",
+        "module_federation": ""
+      }
+    },
+    "caching_strategy": {
+      "static_assets": {
+        "cache_control": "",
+        "versioning": ""
+      },
+      "api_responses": {
+        "strategy": "",
+        "ttl": ""
+      },
+      "state_persistence": {
+        "storage": "",
+        "strategy": ""
+      },
+      "service_worker": {
+        "enabled": false,
+        "caching_strategy": ""
+      }
+    },
+    "code_splitting_strategy": {
+      "route_based": "",
+      "component_based": "",
+      "vendor_splitting": ""
+    },
+    "lazy_loading_strategy": {
+      "images": "",
+      "components": "",
+      "routes": "",
+      "third_party": ""
+    },
+    "performance_monitoring": {
+      "metrics": [
+        {
+          "metric_name": "",
+          "target_value": "",
+          "measurement_tool": ""
+        }
+      ],
+      "monitoring_tools": [],
+      "alerting": ""
+    },
+    "performance_optimization_planned": ""
+  },
+
+  "step7_accessibility_and_standards": {
+    "accessibility_standards": {
+      "wcag_level": "",
+      "target_compliance": "",
+      "audit_frequency": ""
+    },
+    "keyboard_navigation": {
+      "focus_management": "",
+      "tab_order": "",
+      "keyboard_shortcuts": [],
+      "skip_links": ""
+    },
+    "screen_reader_support": {
+      "aria_labels": "",
+      "aria_roles": "",
+      "aria_live_regions": "",
+      "semantic_html": ""
+    },
+    "color_contrast_requirements": {
+      "normal_text_ratio": "",
+      "large_text_ratio": "",
+      "ui_components_ratio": "",
+      "testing_tools": []
+    },
+    "code_standards": {
+      "naming_conventions": {
+        "components": "",
+        "functions": "",
+        "variables": "",
+        "files": "",
+        "css_classes": ""
+      },
+      "code_style": {
+        "indentation": "",
+        "quotes": "",
+        "semicolons": "",
+        "max_line_length": ""
+      },
+      "documentation": {
+        "jsdoc": "",
+        "component_docs": "",
+        "readme": ""
+      },
+      "git_conventions": {
+        "branch_naming": "",
+        "commit_message": "",
+        "pr_template": ""
+      }
+    },
+    "testing_strategy": {
+      "unit_testing": {
+        "framework": "",
+        "coverage_target": "",
+        "focus_areas": []
+      },
+      "integration_testing": {
+        "framework": "",
+        "coverage_target": "",
+        "focus_areas": []
+      },
+      "e2e_testing": {
+        "framework": "",
+        "coverage_target": "",
+        "critical_paths": []
+      },
+      "visual_regression_testing": {
+        "enabled": false,
+        "tool": ""
+      },
+      "accessibility_testing": {
+        "automated_tools": [],
+        "manual_testing": ""
+      },
+      "performance_testing": {
+        "tools": [],
+        "benchmarks": []
+      }
+    },
+    "browser_compatibility_standards": {
+      "supported_browsers": [
+        {
+          "browser": "",
+          "minimum_version": "",
+          "market_share": ""
+        }
+      ],
+      "graceful_degradation": "",
+      "progressive_enhancement": "",
+      "polyfill_strategy": ""
+    },
+    "accessibility_compliance": "",
+    "browser_compatibility_considered": "",
+    "code_standards_defined": "",
+    "testing_strategy_planned": ""
+  },
+
+  "quality_checklist": {
+    "frontend_architecture_clear": false,
+    "component_division_reasonable": false,
+    "state_management_feasible": false,
+    "design_system_complete": false,
+    "responsive_design_considered": false,
+    "performance_optimization_planned": false,
+    "accessibility_standards_met": false,
+    "browser_compatibility_considered": false,
+    "code_standards_defined": false,
+    "testing_strategy_planned": false
+  }
+}
+

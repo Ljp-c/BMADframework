@@ -1,0 +1,430 @@
+
+{
+  "document_info": {
+    "document_title": "",
+    "document_name": "",
+    "version": "",
+    "author": "",
+    "created_date": "",
+    "last_updated": "",
+    "status": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step1_determine_document_type": {
+    "document_purpose": {
+      "purpose": "",
+      "description": ""
+    },
+    "target_audience": {
+      "primary_audience": [],
+      "secondary_audience": [],
+      "audience_description": ""
+    },
+    "document_template": {
+      "template_type": "",
+      "template_name": "",
+      "reason": ""
+    },
+    "storage_location": {
+      "repository": "",
+      "path": "",
+      "access_permissions": ""
+    }
+  },
+
+  "step2_gather_information": {
+    "related_materials": [
+      {
+        "material_name": "",
+        "material_type": "",
+        "source": "",
+        "description": ""
+      }
+    ],
+    "interviews": [
+      {
+        "interviewee": "",
+        "role": "",
+        "date": "",
+        "key_points": []
+      }
+    ],
+    "existing_information": {
+      "summary": "",
+      "documents": [],
+      "notes": ""
+    },
+    "information_gaps": [
+      {
+        "gap": "",
+        "importance": "",
+        "resolution_plan": ""
+      }
+    ]
+  },
+
+  "step3_write_document": {
+    "document_type": "",
+
+    "generic_document": {
+      "table_of_contents": [],
+      "chapters": [
+        {
+          "chapter_number": "",
+          "chapter_title": "",
+          "content": "",
+          "subsections": [
+            {
+              "subsection_number": "",
+              "subsection_title": "",
+              "content": ""
+            }
+          ]
+        }
+      ],
+      "appendix": {
+        "references": [
+          {
+            "reference_name": "",
+            "reference_link": ""
+          }
+        ],
+        "glossary": [
+          {
+            "term": "",
+            "definition": ""
+          }
+        ]
+      }
+    },
+
+    "api_document": {
+      "api_name": "",
+      "overview": "",
+      "base_info": {
+        "base_url": "",
+        "authentication_method": ""
+      },
+      "endpoints": [
+        {
+          "endpoint_name": "",
+          "request": {
+            "method": "",
+            "path": "",
+            "authentication_required": false
+          },
+          "request_params": [
+            {
+              "param_name": "",
+              "type": "",
+              "required": false,
+              "description": ""
+            }
+          ],
+          "request_example": {},
+          "response_params": [
+            {
+              "param_name": "",
+              "type": "",
+              "description": ""
+            }
+          ],
+          "response_example": {},
+          "error_codes": [
+            {
+              "error_code": "",
+              "description": "",
+              "handling_suggestion": ""
+            }
+          ]
+        }
+      ]
+    },
+
+    "technical_design_document": {
+      "feature_name": "",
+      "overview": "",
+      "design_goals": [],
+      "technical_solution": {
+        "solution_overview": "",
+        "architecture_design": {
+          "description": "",
+          "diagram": ""
+        },
+        "data_design": {
+          "description": "",
+          "diagram": ""
+        },
+        "interface_design": {
+          "description": "",
+          "interfaces": []
+        }
+      },
+      "detailed_design": [
+        {
+          "module_name": "",
+          "design_details": ""
+        }
+      ],
+      "performance_considerations": "",
+      "security_considerations": "",
+      "testing_plan": "",
+      "deployment_plan": ""
+    },
+
+    "deployment_document": {
+      "environment_requirements": {
+        "os": "",
+        "runtime": "",
+        "database": "",
+        "other_requirements": []
+      },
+      "deployment_steps": [
+        {
+          "step_number": "",
+          "step_name": "",
+          "description": "",
+          "commands": []
+        }
+      ],
+      "configuration": {
+        "description": "",
+        "config_items": [
+          {
+            "config_name": "",
+            "config_value": "",
+            "description": ""
+          }
+        ]
+      },
+      "verification": {
+        "verification_steps": [],
+        "expected_results": ""
+      },
+      "common_issues": [
+        {
+          "issue": "",
+          "solution": ""
+        }
+      ]
+    },
+
+    "operations_manual": {
+      "system_overview": "",
+      "daily_operations": {
+        "monitoring_checks": [
+          {
+            "check_item": "",
+            "description": "",
+            "frequency": ""
+          }
+        ],
+        "log_checks": {
+          "log_locations": [],
+          "check_methods": ""
+        },
+        "backup_checks": {
+          "backup_strategy": "",
+          "check_methods": ""
+        }
+      },
+      "fault_handling": {
+        "fault_categories": [
+          {
+            "fault_type": "",
+            "symptoms": "",
+            "handling_steps": []
+          }
+        ],
+        "emergency_plan": {
+          "description": "",
+          "steps": []
+        }
+      },
+      "contacts": [
+        {
+          "role": "",
+          "name": "",
+          "contact_info": ""
+        }
+      ]
+    },
+
+    "user_manual": {
+      "product_name": "",
+      "product_introduction": "",
+      "quick_start": {
+        "description": "",
+        "steps": []
+      },
+      "features": [
+        {
+          "feature_name": "",
+          "description": "",
+          "operation_steps": []
+        }
+      ],
+      "faq": [
+        {
+          "question": "",
+          "answer": ""
+        }
+      ],
+      "support_contact": {
+        "description": "",
+        "contact_info": ""
+      }
+    },
+
+    "diagrams": [
+      {
+        "diagram_name": "",
+        "diagram_type": "",
+        "diagram_content": "",
+        "description": ""
+      }
+    ],
+
+    "writing_principles": {
+      "clarity": {
+        "applied": false,
+        "checklist": {
+          "concise_language": false,
+          "no_ambiguity": false,
+          "clear_structure": false
+        },
+        "notes": ""
+      },
+      "completeness": {
+        "applied": false,
+        "checklist": {
+          "all_necessary_info": false,
+          "sufficient_context": false,
+          "includes_examples": false
+        },
+        "notes": ""
+      },
+      "accuracy": {
+        "applied": false,
+        "checklist": {
+          "info_accurate": false,
+          "content_updated": false,
+          "version_dated": false
+        },
+        "notes": ""
+      },
+      "maintainability": {
+        "applied": false,
+        "checklist": {
+          "standard_template": false,
+          "modular_content": false,
+          "revision_history": false
+        },
+        "notes": ""
+      },
+      "readability": {
+        "applied": false,
+        "checklist": {
+          "proper_formatting": false,
+          "helpful_diagrams": false,
+          "navigation_provided": false
+        },
+        "notes": ""
+      }
+    }
+  },
+
+  "step4_review_improve": {
+    "self_review": {
+      "reviewed": false,
+      "review_date": "",
+      "issues_found": [],
+      "corrections_made": []
+    },
+    "peer_review": {
+      "reviewers": [
+        {
+          "reviewer_name": "",
+          "reviewer_role": "",
+          "review_date": "",
+          "comments": [],
+          "approval_status": ""
+        }
+      ]
+    },
+    "feedback_collection": [
+      {
+        "feedback_source": "",
+        "feedback_date": "",
+        "feedback_content": "",
+        "action_taken": ""
+      }
+    ],
+    "improvements": [
+      {
+        "improvement_item": "",
+        "original_content": "",
+        "improved_content": "",
+        "improved_by": "",
+        "improved_date": ""
+      }
+    ],
+    "quality_checklist": {
+      "structure_complete": false,
+      "content_accurate": false,
+      "language_clear": false,
+      "format_consistent": false,
+      "diagrams_effective": false,
+      "version_info_complete": false,
+      "review_passed": false
+    }
+  },
+
+  "step5_publish_maintain": {
+    "publication": {
+      "published": false,
+      "publish_date": "",
+      "publish_location": "",
+      "published_by": "",
+      "publish_notes": ""
+    },
+    "notification": {
+      "notified": false,
+      "notification_date": "",
+      "notification_method": "",
+      "notified_parties": [],
+      "notification_content": ""
+    },
+    "maintenance_plan": {
+      "review_frequency": "",
+      "responsible_person": "",
+      "update_triggers": [],
+      "next_review_date": ""
+    },
+    "version_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": "",
+        "approved_by": ""
+      }
+    ],
+    "delivery_acceptance": {
+      "template_compliant": false,
+      "content_complete_accurate": false,
+      "review_passed": false,
+      "published_correctly": false,
+      "stakeholders_notified": false
+    }
+  }
+}
+

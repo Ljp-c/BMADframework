@@ -1,0 +1,1354 @@
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schema.example.com/prd/v1.0.0",
+  "title": "PRD_Document_Schema",
+  "description": "产品需求文档(PRD) JSON Schema - 供AI填写，严格对应6个Steps",
+  "type": "object",
+  "required": [
+    "documentInfo",
+    "step1",
+    "step2",
+    "step3",
+    "step4",
+    "step5",
+    "step6"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "documentInfo": {
+      "type": "object",
+      "description": "文档元信息",
+      "required": ["productName", "version", "author", "date", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "productName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "产品名称"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "版本号，格式：x.y.z"
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1,
+          "description": "文档作者"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "文档日期，格式：YYYY-MM-DD"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["草稿", "评审中", "已批准"],
+          "description": "文档状态"
+        }
+      }
+    },
+
+    "step1": {
+      "type": "object",
+      "title": "Step 1: 理解项目背景",
+      "description": "理解项目背景阶段的所有输出",
+      "required": [
+        "readProjectBrief",
+        "confirmRequirementsWithAnalyst",
+        "understandBusinessObjectives",
+        "identifyTargetUsers"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "readProjectBrief": {
+          "type": "object",
+          "title": "阅读项目简报",
+          "required": ["summary", "scope", "background"],
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "minLength": 10,
+              "description": "项目摘要"
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 10,
+              "description": "项目范围"
+            },
+            "background": {
+              "type": "string",
+              "minLength": 10,
+              "description": "项目背景"
+            }
+          }
+        },
+        "confirmRequirementsWithAnalyst": {
+          "type": "object",
+          "title": "与Analyst确认需求细节",
+          "required": ["analystName", "confirmDate", "keyRequirements", "clarifications"],
+          "additionalProperties": false,
+          "properties": {
+            "analystName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "需求分析师姓名"
+            },
+            "confirmDate": {
+              "type": "string",
+              "format": "date",
+              "description": "确认日期"
+            },
+            "keyRequirements": {
+              "type": "array",
+              "minItems": 1,
+              "description": "关键需求列表",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "clarifications": {
+              "type": "array",
+              "description": "澄清事项Q&A",
+              "items": {
+                "type": "object",
+                "required": ["question", "answer"],
+                "additionalProperties": false,
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "answer": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "understandBusinessObjectives": {
+          "type": "object",
+          "title": "了解业务目标",
+          "required": ["primaryObjective", "secondaryObjectives", "successMetrics"],
+          "additionalProperties": false,
+          "properties": {
+            "primaryObjective": {
+              "type": "string",
+              "minLength": 10,
+              "description": "主要业务目标"
+            },
+            "secondaryObjectives": {
+              "type": "array",
+              "description": "次要业务目标",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "successMetrics": {
+              "type": "array",
+              "minItems": 1,
+              "description": "成功指标",
+              "items": {
+                "type": "object",
+                "required": ["metric", "target"],
+                "additionalProperties": false,
+                "properties": {
+                  "metric": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "指标名称"
+                  },
+                  "target": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "目标值"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "identifyTargetUsers": {
+          "type": "object",
+          "title": "识别目标用户",
+          "required": ["primaryUsers", "secondaryUsers"],
+          "additionalProperties": false,
+          "properties": {
+            "primaryUsers": {
+              "type": "array",
+              "minItems": 1,
+              "description": "主要目标用户群体",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "secondaryUsers": {
+              "type": "array",
+              "description": "次要目标用户群体",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step2": {
+      "type": "object",
+      "title": "Step 2: 定义产品愿景",
+      "description": "定义产品愿景阶段的所有输出",
+      "required": [
+        "writeVisionStatement",
+        "defineProductPositioning",
+        "determineCoreValueProposition",
+        "describeUserPersonas"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "writeVisionStatement": {
+          "type": "object",
+          "title": "编写产品愿景陈述",
+          "required": ["statement"],
+          "additionalProperties": false,
+          "properties": {
+            "statement": {
+              "type": "string",
+              "minLength": 20,
+              "maxLength": 500,
+              "description": "产品愿景陈述（一句话描述）"
+            },
+            "timeframe": {
+              "type": "string",
+              "description": "愿景实现时间框架"
+            },
+            "impact": {
+              "type": "string",
+              "description": "预期市场/用户影响"
+            }
+          }
+        },
+        "defineProductPositioning": {
+          "type": "object",
+          "title": "定义产品定位",
+          "required": ["positioning", "targetMarket", "differentiators"],
+          "additionalProperties": false,
+          "properties": {
+            "positioning": {
+              "type": "string",
+              "minLength": 10,
+              "description": "产品市场定位描述"
+            },
+            "category": {
+              "type": "string",
+              "description": "产品类别"
+            },
+            "targetMarket": {
+              "type": "string",
+              "minLength": 5,
+              "description": "目标市场"
+            },
+            "differentiators": {
+              "type": "array",
+              "minItems": 1,
+              "description": "核心差异化因素",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "competitors": {
+              "type": "array",
+              "description": "主要竞争对手分析",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "strengths": {
+                    "type": "string"
+                  },
+                  "weaknesses": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "determineCoreValueProposition": {
+          "type": "object",
+          "title": "确定核心价值主张",
+          "required": ["coreValue", "benefits"],
+          "additionalProperties": false,
+          "properties": {
+            "coreValue": {
+              "type": "string",
+              "minLength": 10,
+              "description": "核心价值主张"
+            },
+            "benefits": {
+              "type": "array",
+              "minItems": 1,
+              "description": "用户收益列表",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "uniqueness": {
+              "type": "string",
+              "description": "独特性说明"
+            }
+          }
+        },
+        "describeUserPersonas": {
+          "type": "array",
+          "title": "描述目标用户画像",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["userType", "ageRange", "techLevel", "mainNeeds", "painPoints"],
+            "additionalProperties": false,
+            "properties": {
+              "personaName": {
+                "type": "string",
+                "description": "画像名称/代号"
+              },
+              "userType": {
+                "type": "string",
+                "minLength": 1,
+                "description": "用户类型"
+              },
+              "ageRange": {
+                "type": "string",
+                "description": "年龄范围"
+              },
+              "techLevel": {
+                "type": "string",
+                "enum": ["初级", "中级", "高级"],
+                "description": "技术水平"
+              },
+              "mainNeeds": {
+                "type": "array",
+                "minItems": 1,
+                "description": "主要需求",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "painPoints": {
+                "type": "array",
+                "minItems": 1,
+                "description": "痛点",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "goals": {
+                "type": "array",
+                "description": "用户目标",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "behaviors": {
+                "type": "string",
+                "description": "行为特征"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step3": {
+      "type": "object",
+      "title": "Step 3: 功能规划",
+      "description": "功能规划阶段的所有输出",
+      "required": [
+        "listAllFeatureRequirements",
+        "prioritizeFeaturesMoSCoW",
+        "defineFeatureDependencies",
+        "planMVPScope"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "listAllFeatureRequirements": {
+          "type": "array",
+          "title": "列出所有功能需求",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^F\\d{3}$",
+                "description": "功能ID，格式：F001"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 2,
+                "description": "功能名称"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 10,
+                "description": "功能简要描述"
+              },
+              "category": {
+                "type": "string",
+                "description": "功能分类"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["待开发", "开发中", "已完成", "已取消"],
+                "default": "待开发",
+                "description": "功能状态"
+              }
+            }
+          }
+        },
+        "prioritizeFeaturesMoSCoW": {
+          "type": "object",
+          "title": "按优先级排序(MoSCoW)",
+          "required": ["must", "should", "could", "wont"],
+          "additionalProperties": false,
+          "properties": {
+            "must": {
+              "type": "array",
+              "description": "Must Have - 必须实现",
+              "items": {
+                "type": "object",
+                "required": ["featureId", "featureName"],
+                "additionalProperties": false,
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^F\\d{3}$"
+                  },
+                  "featureName": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "优先级理由"
+                  }
+                }
+              }
+            },
+            "should": {
+              "type": "array",
+              "description": "Should Have - 应该实现",
+              "items": {
+                "type": "object",
+                "required": ["featureId", "featureName"],
+                "additionalProperties": false,
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^F\\d{3}$"
+                  },
+                  "featureName": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "could": {
+              "type": "array",
+              "description": "Could Have - 可以实现",
+              "items": {
+                "type": "object",
+                "required": ["featureId", "featureName"],
+                "additionalProperties": false,
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^F\\d{3}$"
+                  },
+                  "featureName": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "wont": {
+              "type": "array",
+              "description": "Won't Have - 本版本不实现",
+              "items": {
+                "type": "object",
+                "required": ["featureId", "featureName"],
+                "additionalProperties": false,
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^F\\d{3}$"
+                  },
+                  "featureName": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "defineFeatureDependencies": {
+          "type": "array",
+          "title": "定义功能依赖关系",
+          "items": {
+            "type": "object",
+            "required": ["featureId", "dependsOn"],
+            "additionalProperties": false,
+            "properties": {
+              "featureId": {
+                "type": "string",
+                "pattern": "^F\\d{3}$",
+                "description": "功能ID"
+              },
+              "featureName": {
+                "type": "string",
+                "description": "功能名称"
+              },
+              "dependsOn": {
+                "type": "array",
+                "description": "依赖的功能ID列表",
+                "items": {
+                  "type": "string",
+                  "pattern": "^F\\d{3}$"
+                }
+              },
+              "dependencyType": {
+                "type": "string",
+                "enum": ["硬依赖", "软依赖"],
+                "description": "依赖类型"
+              },
+              "notes": {
+                "type": "string",
+                "description": "依赖说明"
+              }
+            }
+          }
+        },
+        "planMVPScope": {
+          "type": "object",
+          "title": "规划MVP范围",
+          "required": ["mvpGoal", "includedFeatures", "excludedFeatures"],
+          "additionalProperties": false,
+          "properties": {
+            "mvpGoal": {
+              "type": "string",
+              "minLength": 10,
+              "description": "MVP目标描述"
+            },
+            "includedFeatures": {
+              "type": "array",
+              "minItems": 1,
+              "description": "MVP包含的功能ID列表",
+              "items": {
+                "type": "string",
+                "pattern": "^F\\d{3}$"
+              }
+            },
+            "excludedFeatures": {
+              "type": "array",
+              "description": "MVP排除的功能ID列表",
+              "items": {
+                "type": "string",
+                "pattern": "^F\\d{3}$"
+              }
+            },
+            "timeline": {
+              "type": "string",
+              "description": "MVP预期完成时间"
+            },
+            "rationale": {
+              "type": "string",
+              "description": "MVP范围决策理由"
+            }
+          }
+        }
+      }
+    },
+
+    "step4": {
+      "type": "array",
+      "title": "Step 4: 详细功能规格",
+      "description": "每个功能的详细规格说明",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "featureId",
+          "featureName",
+          "detailedDescription",
+          "userFlow",
+          "interfacePrototype",
+          "acceptanceCriteria"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "featureId": {
+            "type": "string",
+            "pattern": "^F\\d{3}$",
+            "description": "功能ID"
+          },
+          "featureName": {
+            "type": "string",
+            "minLength": 2,
+            "description": "功能名称"
+          },
+          "detailedDescription": {
+            "type": "object",
+            "title": "编写每个功能的详细描述",
+            "required": ["description", "businessRules"],
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 20,
+                "description": "详细功能描述"
+              },
+              "businessRules": {
+                "type": "array",
+                "description": "业务规则",
+                "items": {
+                  "type": "object",
+                  "required": ["ruleId", "rule"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "ruleId": {
+                      "type": "string",
+                      "pattern": "^BR\\d{3}$",
+                      "description": "规则ID"
+                    },
+                    "rule": {
+                      "type": "string",
+                      "description": "规则描述"
+                    },
+                    "condition": {
+                      "type": "string",
+                      "description": "触发条件"
+                    }
+                  }
+                }
+              },
+              "dataRequirements": {
+                "type": "object",
+                "description": "数据需求",
+                "additionalProperties": false,
+                "properties": {
+                  "entities": {
+                    "type": "array",
+                    "description": "数据实体",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "fields": {
+                    "type": "array",
+                    "description": "数据字段定义",
+                    "items": {
+                      "type": "object",
+                      "required": ["fieldName", "fieldType", "required"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "fieldName": {
+                          "type": "string"
+                        },
+                        "fieldType": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "required": {
+                          "type": "boolean"
+                        },
+                        "validation": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "userFlow": {
+            "type": "object",
+            "title": "定义用户流程",
+            "required": ["entryPoint", "steps", "exitPoint"],
+            "additionalProperties": false,
+            "properties": {
+              "entryPoint": {
+                "type": "string",
+                "description": "流程入口"
+              },
+              "steps": {
+                "type": "array",
+                "minItems": 1,
+                "description": "流程步骤",
+                "items": {
+                  "type": "object",
+                  "required": ["stepNumber", "userAction", "systemResponse"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "stepNumber": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "description": "步骤序号"
+                    },
+                    "userAction": {
+                      "type": "string",
+                      "description": "用户操作"
+                    },
+                    "systemResponse": {
+                      "type": "string",
+                      "description": "系统响应"
+                    },
+                    "alternativePath": {
+                      "type": "string",
+                      "description": "备选路径/异常处理"
+                    }
+                  }
+                }
+              },
+              "exitPoint": {
+                "type": "string",
+                "description": "流程出口"
+              },
+              "flowDiagram": {
+                "type": "string",
+                "description": "流程图描述或链接"
+              }
+            }
+          },
+          "interfacePrototype": {
+            "type": "object",
+            "title": "设计界面原型(可配合设计团队)",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "界面原型描述"
+              },
+              "prototypeLink": {
+                "type": "string",
+                "format": "uri",
+                "description": "原型链接URL"
+              },
+              "uiComponents": {
+                "type": "array",
+                "description": "UI组件列表",
+                "items": {
+                  "type": "object",
+                  "required": ["componentName", "componentType"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "componentName": {
+                      "type": "string"
+                    },
+                    "componentType": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "interactions": {
+                "type": "array",
+                "description": "交互设计",
+                "items": {
+                  "type": "object",
+                  "required": ["trigger", "action", "result"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "trigger": {
+                      "type": "string",
+                      "description": "触发条件"
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "交互动作"
+                    },
+                    "result": {
+                      "type": "string",
+                      "description": "结果"
+                    }
+                  }
+                }
+              },
+              "designCollaboration": {
+                "type": "object",
+                "description": "设计团队协作信息",
+                "additionalProperties": false,
+                "properties": {
+                  "designer": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["待设计", "设计中", "已完成", "已评审"]
+                  },
+                  "designLink": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "title": "编写验收标准",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["criteriaId", "given", "when", "then"],
+              "additionalProperties": false,
+              "properties": {
+                "criteriaId": {
+                  "type": "string",
+                  "pattern": "^AC\\d{3}$",
+                  "description": "验收标准ID"
+                },
+                "given": {
+                  "type": "string",
+                  "description": "前置条件(Given)"
+                },
+                "when": {
+                  "type": "string",
+                  "description": "操作(When)"
+                },
+                "then": {
+                  "type": "string",
+                  "description": "预期结果(Then)"
+                },
+                "passed": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "是否通过验收"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step5": {
+      "type": "object",
+      "title": "Step 5: 非功能需求",
+      "description": "非功能需求定义",
+      "required": [
+        "performanceRequirements",
+        "securityRequirements",
+        "usabilityRequirements",
+        "compatibilityRequirements"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "performanceRequirements": {
+          "type": "object",
+          "title": "性能需求",
+          "required": ["metrics"],
+          "additionalProperties": false,
+          "properties": {
+            "metrics": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["metric", "requirement"],
+                "additionalProperties": false,
+                "properties": {
+                  "metric": {
+                    "type": "string",
+                    "description": "性能指标名称"
+                  },
+                  "requirement": {
+                    "type": "string",
+                    "description": "要求"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["高", "中", "低"]
+                  }
+                }
+              }
+            },
+            "pageLoadTime": {
+              "type": "string",
+              "description": "页面加载时间"
+            },
+            "apiResponseTime": {
+              "type": "string",
+              "description": "API响应时间"
+            },
+            "concurrentUsers": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "支持并发用户数"
+            },
+            "throughput": {
+              "type": "string",
+              "description": "吞吐量要求"
+            }
+          }
+        },
+        "securityRequirements": {
+          "type": "object",
+          "title": "安全需求",
+          "required": ["requirements"],
+          "additionalProperties": false,
+          "properties": {
+            "requirements": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "requirement"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^SEC\\d{3}$"
+                  },
+                  "requirement": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "complianceStandard": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "authentication": {
+              "type": "string",
+              "description": "认证方式"
+            },
+            "authorization": {
+              "type": "string",
+              "description": "授权机制"
+            },
+            "dataEncryption": {
+              "type": "string",
+              "description": "数据加密要求"
+            },
+            "auditLogging": {
+              "type": "string",
+              "description": "审计日志要求"
+            }
+          }
+        },
+        "usabilityRequirements": {
+          "type": "object",
+          "title": "可用性需求",
+          "required": ["systemAvailability"],
+          "additionalProperties": false,
+          "properties": {
+            "systemAvailability": {
+              "type": "string",
+              "description": "系统可用性(如99.9%)"
+            },
+            "dataBackup": {
+              "type": "string",
+              "description": "数据备份策略"
+            },
+            "rto": {
+              "type": "string",
+              "description": "恢复时间目标(RTO)"
+            },
+            "rpo": {
+              "type": "string",
+              "description": "恢复点目标(RPO)"
+            },
+            "otherRequirements": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["requirement"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "requirement": {
+                    "type": "string"
+                  },
+                  "metric": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "compatibilityRequirements": {
+          "type": "object",
+          "title": "兼容性需求",
+          "required": ["browsers", "devices", "operatingSystems"],
+          "additionalProperties": false,
+          "properties": {
+            "browsers": {
+              "type": "array",
+              "minItems": 1,
+              "description": "浏览器支持列表",
+              "items": {
+                "type": "object",
+                "required": ["browser", "minVersion"],
+                "additionalProperties": false,
+                "properties": {
+                  "browser": {
+                    "type": "string"
+                  },
+                  "minVersion": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "devices": {
+              "type": "array",
+              "minItems": 1,
+              "description": "设备支持列表",
+              "items": {
+                "type": "object",
+                "required": ["deviceType"],
+                "additionalProperties": false,
+                "properties": {
+                  "deviceType": {
+                    "type": "string"
+                  },
+                  "specifications": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "operatingSystems": {
+              "type": "array",
+              "minItems": 1,
+              "description": "操作系统支持列表",
+              "items": {
+                "type": "object",
+                "required": ["os", "minVersion"],
+                "additionalProperties": false,
+                "properties": {
+                  "os": {
+                    "type": "string"
+                  },
+                  "minVersion": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "screenResolutions": {
+              "type": "array",
+              "description": "屏幕分辨率支持",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "step6": {
+      "type": "object",
+      "title": "Step 6: 审核与确认",
+      "description": "审核与确认阶段的所有输出",
+      "required": [
+        "confirmTechnicalFeasibilityWithArchitect",
+        "confirmRequirementsWithStakeholders",
+        "obtainFinalApproval"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "confirmTechnicalFeasibilityWithArchitect": {
+          "type": "object",
+          "title": "与Architect确认技术可行性",
+          "required": ["architectName", "reviewDate", "feasibilityStatus"],
+          "additionalProperties": false,
+          "properties": {
+            "architectName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "架构师姓名"
+            },
+            "reviewDate": {
+              "type": "string",
+              "format": "date",
+              "description": "评审日期"
+            },
+            "feasibilityStatus": {
+              "type": "string",
+              "enum": ["可行", "需调整", "不可行"],
+              "description": "技术可行性结论"
+            },
+            "technicalConstraints": {
+              "type": "array",
+              "description": "技术约束条件",
+              "items": {
+                "type": "string"
+              }
+            },
+            "technicalRecommendations": {
+              "type": "array",
+              "description": "技术建议",
+              "items": {
+                "type": "string"
+              }
+            },
+            "risks": {
+              "type": "array",
+              "description": "技术风险",
+              "items": {
+                "type": "object",
+                "required": ["risk", "impact", "mitigation"],
+                "additionalProperties": false,
+                "properties": {
+                  "risk": {
+                    "type": "string",
+                    "description": "风险描述"
+                  },
+                  "impact": {
+                    "type": "string",
+                    "enum": ["高", "中", "低"],
+                    "description": "影响程度"
+                  },
+                  "mitigation": {
+                    "type": "string",
+                    "description": "缓解措施"
+                  }
+                }
+              }
+            },
+            "comments": {
+              "type": "string",
+              "description": "评审意见"
+            }
+          }
+        },
+        "confirmRequirementsWithStakeholders": {
+          "type": "object",
+          "title": "与利益相关者确认需求",
+          "required": ["stakeholders", "confirmationStatus"],
+          "additionalProperties": false,
+          "properties": {
+            "stakeholders": {
+              "type": "array",
+              "minItems": 1,
+              "description": "利益相关者确认列表",
+              "items": {
+                "type": "object",
+                "required": ["name", "role", "confirmed"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "姓名"
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "角色"
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "description": "是否确认"
+                  },
+                  "confirmDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "确认日期"
+                  },
+                  "comments": {
+                    "type": "string",
+                    "description": "意见反馈"
+                  }
+                }
+              }
+            },
+            "confirmationStatus": {
+              "type": "string",
+              "enum": ["待确认", "部分确认", "全部确认"],
+              "description": "整体确认状态"
+            },
+            "pendingIssues": {
+              "type": "array",
+              "description": "待解决问题",
+              "items": {
+                "type": "object",
+                "required": ["issue", "status"],
+                "additionalProperties": false,
+                "properties": {
+                  "issue": {
+                    "type": "string"
+                  },
+                  "raisedBy": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["待解决", "解决中", "已解决"]
+                  },
+                  "resolution": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "obtainFinalApproval": {
+          "type": "object",
+          "title": "获取最终批准",
+          "required": ["approvalStatus"],
+          "additionalProperties": false,
+          "properties": {
+            "approvalStatus": {
+              "type": "string",
+              "enum": ["待批准", "已批准", "已拒绝", "需修改"],
+              "description": "批准状态"
+            },
+            "approver": {
+              "type": "string",
+              "description": "批准人"
+            },
+            "approvalDate": {
+              "type": "string",
+              "format": "date",
+              "description": "批准日期"
+            },
+            "comments": {
+              "type": "string",
+              "description": "批准意见"
+            },
+            "conditions": {
+              "type": "array",
+              "description": "附加条件",
+              "items": {
+                "type": "string"
+              }
+            },
+            "signoffs": {
+              "type": "array",
+              "description": "签字确认记录",
+              "items": {
+                "type": "object",
+                "required": ["role", "name", "signed"],
+                "additionalProperties": false,
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "signed": {
+                    "type": "boolean"
+                  },
+                  "signDate": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "appendix": {
+      "type": "object",
+      "description": "附录（可选）",
+      "additionalProperties": false,
+      "properties": {
+        "glossary": {
+          "type": "array",
+          "description": "术语表",
+          "items": {
+            "type": "object",
+            "required": ["term", "definition"],
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "type": "string"
+              },
+              "definition": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "description": "参考资料",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revisionHistory": {
+          "type": "array",
+          "description": "修订历史",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "author", "changes"],
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "author": {
+                "type": "string"
+              },
+              "changes": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
