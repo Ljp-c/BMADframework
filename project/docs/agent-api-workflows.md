@@ -98,6 +98,14 @@
   - 按检查清单提出修改建议并产出改进版草稿
 
 ---
+## UV/UX设计
+
+ - 传入文件
+  - 通用上下文
+  - PRD MD（调用 2.x 输出）
+  - 模板/参考：e:\AUTOGNEN_Version\project\docs\table_specs\uv-ux.md  
+
+
 
 ## 5. 前端架构设计
 ### 调用 5.1：生成前端架构 JSON（遵循 Schema）

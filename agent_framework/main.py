@@ -418,7 +418,117 @@ class WorkflowManager:
         """
         print("\n🚀 [步骤 3,1] 正在检查清单...")    
 
+        next_story_json = self._read_file(os.path.join(self.paths["docs_jsons"], "next-story.json"))
+        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "checklist.json"))
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-checklist.md"))
+        context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        template = self._read_file(os.path.join(self.paths["docs_checklists"], "architecture-checklist.md"))
+        
+        prompt = f"""
+        任务: 请根据用户故事检查清单，创建一份检查清单的 JSON。
+        {task}
 
+        用户故事 (输入):
+        {next_story_json}
+
+        JSON SCHEMA (必须严格遵守):
+        {schema}
+        通用上下文参考:
+        {context[:10000]}...
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+
+        指令:
+        请只返回符合 Schema 的、有效的 JSON 内容。
+        """
+        response = self._run_agent_task("QA", "qa.md", prompt)
+        json_content = self._extract_json_from_response(response)
+        output_path = os.path.join(self.paths["docs_jsons"], "checklist.json")
+        self._write_file(output_path, json_content)
+        return output_path
+
+    def step_pre4_environment(self):
+        """
+        **工作流步骤 4,1: 设计环境偏好**
+
+        - **负责人**: Architect (架构师)
+        - **输入**: `prd.json` 和环境偏好文档。
+
+        """
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
+        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
+        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
+        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "environment.md"))
+        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+        
+        prompt = f"""
+        任务: 请根据 PRD 和环境偏好，创建一份环境偏好设计文档 (Markdown 格式)。
+        {task}
+
+        PRD (输入):
+        {prd_md}
+
+        环境偏好:
+        {template}
+
+        通用上下文参考:
+        {context1[:10000]}...
+        {context2[:10000]}...
+        {context3[:10000]}...
+        
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+
+        指令:
+        请返回一份全面的、格式良好的 json 文档，描述环境偏好。
+        """
+        response = self._run_agent_task("Architect", "architect.md", prompt)
+        json_content = self._extract_json_from_response(response)
+        output_path = os.path.join(self.paths["docs_jsons"], "environment.json")
+        self._write_file(output_path, json_content)
+        return output_path
+
+    def step_pre4_1_environment(self):
+        """
+        **工作流步骤 4,1,1: 技术栈偏好**
+
+        - **负责人**: Architect (架构师)
+        - **输入**: `prd.json` 和环境偏好文档。
+
+        """
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
+        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
+        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
+        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "tech-stack.md"))
+        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+        
+        prompt = f"""
+        任务: 请根据 PRD 和技术栈偏好，创建一份技术栈偏好设计文档 (Markdown 格式)。
+        {task}
+
+        PRD (输入):
+        {prd_md}
+
+        技术栈偏好:
+        {template}
+
+        通用上下文参考:
+        {context1[:10000]}...
+        {context2[:10000]}...
+        {context3[:10000]}...
+        
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+
+        指令:
+        请返回一份全面的、格式良好的 Markdown 文档，描述环境偏好。
+        """
+        response = self._run_agent_task("Architect", "architect.md", prompt)
+        output_path = os.path.join(self.paths["docs_codespecs"], "environment.md")
+        self._write_file(output_path, response)
+        return output_path
 
     def step_4_architecture(self):
         """
@@ -431,8 +541,8 @@ class WorkflowManager:
         print("\n🚀 [步骤 4] 正在设计系统架构...")
         task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
         prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        tech_stack = self._read_file(os.path.join(self.paths["docs_codespecs"], "tech-stack.md"))
-        environment = self._read_file(os.path.join(self.paths["docs_codespecs"], "environment.md"))
+        tech_stack = self._read_file(os.path.join(self.paths["docs_output"], "tech-stack.md"))
+        environment = self._read_file(os.path.join(self.paths["docs_output"], "environment.md"))
         context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
         context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
         context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
@@ -467,56 +577,10 @@ class WorkflowManager:
         self._write_file(output_path, response)
         return output_path
 
-    def step_5_frontend_architecture(self):
-        """
-        **工作流步骤 5: 设计前端架构**
 
-        - **负责人**: DesignArchitect (前端架构师)
-        - **输入**: `prd.json` 和前端架构的 Schema。
-        - **输出**: `front-end.json` 文件。
-        """
-        print("\n🚀 [步骤 5] 正在设计前端架构...")
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "front-end.json"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "front-end.json"))
-        component = self._read_file(os.path.join(self.paths["docs_codespecs"], "component-specs.md"))
-        prompt = f"""
-        任务: 请根据 PRD 创建一份前端架构的 JSON。
-        {task}
+    def step_4_1_APIreference(self):
 
-        PRD (输入):
-        {prd_md}
-
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        
-        组件规范参考:
-        {component[:10000]}...
-
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
-        """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "front-end.json")
-        self._write_file(output_path, json_content)
-        return output_path
-
-    def step_6_APIreference(self):
-
-        print("\n🚀 [步骤 6] 正在设计 API 参考文档...")
+        print("\n🚀 [步骤 4,1] 正在设计 API 参考文档...")   
         task = self._read_file(os.path.join(self.paths["tasks"], "create-doc.md"))
         context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
         context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
@@ -542,6 +606,7 @@ class WorkflowManager:
 
         模板参考 (结构和内容示例):
         {template[:10000]}...
+        
 
         指令:
         请只返回符合 Schema 的、有效的 JSON 内容。
@@ -553,15 +618,15 @@ class WorkflowManager:
         return output_path
 
 
-    def step_7_digitstructure_design(self):
+    def step_4_2_digitstructure_design(self):
         """
-        **工作流步骤 7: 设计数字结构**
+        **工作流步骤 4,2: 设计数字结构**
 
         - **负责人**: DesignArchitect (数字结构设计师)
         - **输入**: `prd.json` 和数字结构的 Schema。
         - **输出**: `digital-structure.json` 文件。
         """
-        print("\n🚀 [步骤 7] 正在设计数字结构...")
+        print("\n🚀 [步骤 4,2] 正在设计数字结构...")
         task = self._read_file(os.path.join(self.paths["tasks"], "create-doc.md"))
         context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
         context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
@@ -604,6 +669,140 @@ class WorkflowManager:
         output_path = os.path.join(self.paths["docs_jsons"], "api-reference.json")
         self._write_file(output_path, json_content)
         return output_path
+
+
+    def pre_step_5_UX_UI_design(self):
+        """
+        **工作流步骤 5,1: 用户体验 (UX) 设计**
+
+        - **负责人**: DesignArchitect (用户体验设计师)
+        - **输入**: `prd.json` 和 UX 设计的 Schema。
+        - **输出**: `ux-design.json` 文件。
+        """
+        print("\n🚀 [步骤 5,1] 正在设计用户体验...")    
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
+        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
+        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
+        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "front-end.json"))
+        prompt = f"""
+        任务: 请根据 PRD 创建一份组件规范的 Markdown 文档。
+        {task}
+
+        PRD (输入):
+        {prd_md}
+        
+        通用上下文参考:
+        {context1[:10000]}...
+        {context2[:10000]}...
+        {context3[:10000]}...
+        
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+        """
+        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+        json_content = self._extract_json_from_response(response)
+        output_path = os.path.join(self.paths["docs_output"], "ux-design.md")
+        self._write_file(output_path, json_content)
+        return output_path
+
+
+
+
+
+    def step_pre_5_1_componet(self):
+        """
+        **工作流步骤 5,2: 组件规范**
+
+        - **负责人**: DesignArchitect (组件设计师)
+        - **输入**: `prd.json` 和组件规范的 Schema。
+        - **输出**: `component-specs.md` 文件。
+        """
+        print("\n🚀 [步骤 5,2] 正在设计组件规范...")
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
+        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
+        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
+        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "component-specs.json"))
+        ux_design = self._read_file(os.path.join(self.paths["docs_output"], "ux-design.md"))
+
+        prompt = f"""
+        任务: 请根据 PRD 创建一份组件规范的 Markdown 文档。
+        {task}
+
+        PRD (输入):
+        {prd_md}
+        
+        UX 设计参考:
+        {ux_design[:10000]}...
+        
+        通用上下文参考:
+        {context1[:10000]}...
+        {context2[:10000]}...
+        {context3[:10000]}...
+        
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+        """
+        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+        json_content = self._extract_json_from_response(response)
+        output_path = os.path.join(self.paths["docs_jsons"], "component-specs.json")
+        self._write_file(output_path, json_content)
+        return output_path
+
+    def step_5_frontend_architecture(self):
+        """
+        **工作流步骤 5: 设计前端架构**
+
+        - **负责人**: DesignArchitect (前端架构师)
+        - **输入**: `prd.json` 和前端架构的 Schema。
+        - **输出**: `front-end.json` 文件。
+        """
+        print("\n🚀 [步骤 5] 正在设计前端架构...")
+        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
+        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
+        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
+        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "front-end.json"))
+        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "front-end.json"))
+        ux_design = self._read_file(os.path.join(self.paths["docs_output"], "ux-design.md"))
+        component = self._read_file(os.path.join(self.paths["docs_codespecs"], "component-specs.md"))
+        prompt = f"""
+        任务: 请根据 PRD 创建一份前端架构的 JSON。
+        {task}
+
+        PRD (输入):
+        {prd_md}
+
+        JSON SCHEMA (必须严格遵守):
+        {schema}
+        
+        组件规范参考:
+        {component[:10000]}...
+
+        UX 设计参考:
+        {ux_design[:10000]}...
+        
+        通用上下文参考:
+        {context1[:10000]}...
+        {context2[:10000]}...
+        {context3[:10000]}...
+        
+        模板参考 (结构和内容示例):
+        {template[:10000]}...
+
+        指令:
+        请只返回符合 Schema 的、有效的 JSON 内容。
+        """
+        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+        json_content = self._extract_json_from_response(response)
+        output_path = os.path.join(self.paths["docs_jsons"], "front-end.json")
+        self._write_file(output_path, json_content)
+        return output_path
+
 
     def step_8_checklist()
 
