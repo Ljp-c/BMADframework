@@ -1,0 +1,105 @@
+{
+  "document_info": {
+    "system_name": "",
+    "version": "",
+    "architect": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step5_api_design": {
+    "base_url": "",
+    "api_overview": {
+      "authentication_method": "",
+      "authentication_header": "",
+      "authentication_example": ""
+    },
+    "response_format": {
+      "success_response": {
+        "structure": {
+          "code": "",
+          "message": "",
+          "data": {}
+        },
+        "example": {}
+      },
+      "error_response": {
+        "structure": {
+          "code": "",
+          "message": "",
+          "errors": []
+        },
+        "example": {}
+      }
+    },
+    "api_modules": [
+      {
+        "module_name": "",
+        "description": "",
+        "endpoints": [
+          {
+            "name": "",
+            "method": "",
+            "endpoint": "",
+            "description": "",
+            "authentication_required": false,
+            "request_headers": [
+              {
+                "header_name": "",
+                "required": false,
+                "description": ""
+              }
+            ],
+            "path_params": [
+              {
+                "param_name": "",
+                "type": "",
+                "required": false,
+                "description": ""
+              }
+            ],
+            "query_params": [
+              {
+                "param_name": "",
+                "type": "",
+                "required": false,
+                "default_value": "",
+                "description": ""
+              }
+            ],
+            "request_body": [
+              {
+                "param_name": "",
+                "type": "",
+                "required": false,
+                "description": ""
+              }
+            ],
+            "request_example": {},
+            "response_example": {}
+          }
+        ]
+      }
+    ],
+    "http_status_codes": [
+      {
+        "code": "",
+        "description": ""
+      }
+    ],
+    "api_standards": {
+      "style": "",
+      "data_format": "",
+      "versioning_strategy": "",
+      "naming_convention": ""
+    }
+  }
+}

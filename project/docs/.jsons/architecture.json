@@ -1,0 +1,170 @@
+{
+  "document_info": {
+    "system_name": "",
+    "version": "",
+    "architect": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step1_requirement_analysis": {
+    "system_vision": "",
+    "architecture_goals": {
+      "scalability": "",
+      "high_performance": "",
+      "high_availability": "",
+      "security": "",
+      "maintainability": ""
+    },
+    "key_decisions": [
+      {
+        "decision": "",
+        "choice": "",
+        "reason": "",
+        "alternatives": ""
+      }
+    ],
+    "functional_requirements": [],
+    "non_functional_requirements": {
+      "performance": "",
+      "availability": "",
+      "scalability": "",
+      "security": ""
+    },
+    "technical_constraints": [],
+    "system_complexity": {
+      "level": "",
+      "reason": ""
+    }
+  },
+
+  "step2_architecture_design": {
+    "architecture_style": {
+      "type": "",
+      "reason": ""
+    },
+    "system_architecture_diagram": "",
+    "system_layers": [
+      {
+        "layer_name": "",
+        "components": [
+          {
+            "component_name": "",
+            "responsibility": "",
+            "technology": "",
+            "key_features": ""
+          }
+        ]
+      }
+    ],
+    "service_design": {
+      "service_list": [
+        {
+          "service_name": "",
+          "responsibility": "",
+          "tech_stack": "",
+          "dependencies": [],
+          "port": ""
+        }
+      ],
+      "sync_communication": [
+        {
+          "caller": "",
+          "callee": "",
+          "protocol": "",
+          "purpose": ""
+        }
+      ],
+      "async_communication": [
+        {
+          "producer": "",
+          "consumer": "",
+          "message_type": "",
+          "purpose": ""
+        }
+      ]
+    },
+    "scalability_design": {
+      "horizontal_scaling": {
+        "stateless_service": "",
+        "load_balancing": "",
+        "database_read_write_split": "",
+        "cache_cluster": ""
+      },
+      "vertical_scaling": {
+        "resource_auto_scaling": "",
+        "database_sharding": ""
+      }
+    },
+    "technical_debt": [
+      {
+        "item": "",
+        "description": "",
+        "impact": "",
+        "plan": ""
+      }
+    ],
+    "adr_records": [
+      {
+        "adr_number": "",
+        "title": "",
+        "status": "",
+        "date": ""
+      }
+    ]
+  },
+
+  "step7_security_design": {
+    "authentication_authorization": {
+      "auth_flow_diagram": "",
+      "auth_flow_steps": []
+    },
+    "data_security": [
+      {
+        "security_measure": "",
+        "description": ""
+      }
+    ],
+    "network_security": [],
+    "ssl_tls_config": [
+      {
+        "environment": "",
+        "certificate_type": ""
+      }
+    ],
+    "secrets_management": [
+      {
+        "secret_type": "",
+        "storage_location": ""
+      }
+    ],
+    "security_policies": [
+      {
+        "policy_name": "",
+        "description": "",
+        "enforcement": ""
+      }
+    ],
+    "data_protection": {
+      "encryption_at_rest": "",
+      "encryption_in_transit": "",
+      "sensitive_data_handling": "",
+      "data_masking": ""
+    },
+    "audit_logging": {
+      "enabled": false,
+      "log_scope": [],
+      "log_storage": "",
+      "retention_policy": "",
+      "analysis_tool": ""
+    }
+  }
+}

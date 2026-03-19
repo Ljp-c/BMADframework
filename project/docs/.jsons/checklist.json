@@ -1,0 +1,58 @@
+{
+  "document_info": {
+    "project_name": "",
+    "version": "",
+    "qa_engineer": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "checklist_sections": [
+    {
+      "section_name": "",
+      "description": "",
+      "items": [
+        {
+          "item_id": "",
+          "description": "",
+          "priority": "",
+          "status": "",
+          "notes": "",
+          "test_cases": [
+            {
+              "test_case_id": "",
+              "description": "",
+              "expected_result": "",
+              "actual_result": "",
+              "passed": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "quality_metrics": {
+    "total_items": 0,
+    "completed_items": 0,
+    "pass_rate": "",
+    "critical_issues": [],
+    "major_issues": [],
+    "minor_issues": []
+  },
+
+  "sign_off": {
+    "qa_engineer": "",
+    "product_manager": "",
+    "architect": "",
+    "approval_date": ""
+  }
+}

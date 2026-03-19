@@ -169,13 +169,18 @@ class WorkflowManager:
         # 定义所有关键目录的路径，方便后续引用
         self.paths = {
             "personas": os.path.join(self.project_dir, ".bmad", "personas"),
-            "Schma"
             "data": os.path.join(self.project_dir, ".bmad", "data"),
             "checklists": os.path.join(self.project_dir, ".bmad", "checklists"),
             "docs_jsons": os.path.join(self.project_dir, "docs", ".jsons"),
             "docs_specs": os.path.join(self.project_dir, "docs", "code_specs"),
+            "docs_codespecs": os.path.join(self.project_dir, "docs", "codespecs"),
             "docs_table_specs": os.path.join(self.project_dir, "docs", "table_specs"),
             "docs_both_specs": os.path.join(self.project_dir, "docs", "both_specs"),
+            "docs_bothspecs": os.path.join(self.project_dir, "docs", "both_specs"),
+            "docs_output": os.path.join(self.project_dir, "docs", "output"),
+            "docs_stories_epic_1": os.path.join(self.project_dir, "docs", "stories", "epic-1"),
+            "docs_checklists": os.path.join(self.project_dir, "docs", "checklists"),
+            "output": os.path.join(self.project_dir, "output"),
             "scripts": os.path.join(self.project_dir, "python-bash"),
         }
 
@@ -632,13 +637,13 @@ class WorkflowManager:
         context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
         context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
         prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        system_architecture = self._read_file(os.path.join(self.paths["docs_jsons"], "system-architecture.json"))
+        system_architecture = self._read_file(os.path.join(self.paths["docs_jsons"], "architecture.json"))
         api_reference = self._read_file(os.path.join(self.paths["docs_jsons"], "api-reference.json"))
         schema = self._read_file(os.path.join(self.paths["docs_jsons"], "create_doc.json"))
         template = self._read_file(os.path.join(self.paths["docs_codespecs"], "data_models.md"))
 
         prompt = f"""
-        任务: 请根据 PRD 创建一份 API 参考文档的 JSON。
+        任务: 请根据 PRD 创建一份数据模型文档的 JSON。
         {task}
 
         PRD (输入):
@@ -666,7 +671,7 @@ class WorkflowManager:
         """
         response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
         json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "api-reference.json")
+        output_path = os.path.join(self.paths["docs_jsons"], "data-models.json")
         self._write_file(output_path, json_content)
         return output_path
 
@@ -799,7 +804,7 @@ class WorkflowManager:
         """
         response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
         json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "front-end.json")
+        output_path = os.path.join(self.paths["docs_jsons"], "front-end-architecture.json")
         self._write_file(output_path, json_content)
         return output_path
 

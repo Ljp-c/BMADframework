@@ -1,0 +1,102 @@
+{
+  "document_info": {
+    "system_name": "",
+    "version": "",
+    "architect": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step6_infrastructure_planning": {
+    "environment_overview": [
+      {
+        "environment_name": "",
+        "purpose": "",
+        "configuration": "",
+        "domain": "",
+        "access_permission": ""
+      }
+    ],
+    "infrastructure_config": {
+      "compute_resources": [
+        {
+          "environment": "",
+          "specification": "",
+          "quantity": "",
+          "os": ""
+        }
+      ],
+      "database_config": [
+        {
+          "environment": "",
+          "postgresql": "",
+          "redis": ""
+        }
+      ]
+    },
+    "deployment_topology": {
+      "diagram": "",
+      "description": ""
+    },
+    "ci_cd": {
+      "pipeline_overview": "",
+      "pipeline_diagram": "",
+      "ci_tool": "",
+      "cd_tool": "",
+      "pipeline_stages": [],
+      "deployment_strategy": "",
+      "github_actions_config": ""
+    },
+    "monitoring": {
+      "monitors": [
+        {
+          "monitoring_type": "",
+          "tool": "",
+          "metrics": []
+        }
+      ]
+    },
+    "alerting": {
+      "alerts": [
+        {
+          "alert_name": "",
+          "condition": "",
+          "level": "",
+          "notification_method": ""
+        }
+      ]
+    },
+    "logging": {
+      "format": "",
+      "levels": [],
+      "retention": "",
+      "aggregation_tool": ""
+    },
+    "disaster_recovery": {
+      "backup_strategy": [
+        {
+          "data_type": "",
+          "backup_frequency": "",
+          "retention_period": "",
+          "storage_location": ""
+        }
+      ],
+      "recovery_plan": [
+        {
+          "scenario": "",
+          "rto": "",
+          "rpo": "",
+          "recovery_steps": []
+        }
+      ]
+    }
+  }
+}

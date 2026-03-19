@@ -1,0 +1,247 @@
+{
+  "document_info": {
+    "project_name": "",
+    "version": "",
+    "architect": "",
+    "created_date": "",
+    "last_updated": "",
+    "revision_history": [
+      {
+        "version": "",
+        "date": "",
+        "author": "",
+        "changes": ""
+      }
+    ]
+  },
+
+  "step4_component_system_design": {
+    "component_hierarchy": {
+      "description": "",
+      "diagram": ""
+    },
+    "atoms": [
+      {
+        "component_name": "",
+        "description": "",
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "variants": [],
+        "accessibility": ""
+      }
+    ],
+    "molecules": [
+      {
+        "component_name": "",
+        "description": "",
+        "composition": [],
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "accessibility": ""
+      }
+    ],
+    "organisms": [
+      {
+        "component_name": "",
+        "description": "",
+        "composition": [],
+        "props": [
+          {
+            "prop_name": "",
+            "type": "",
+            "required": false,
+            "default_value": "",
+            "description": ""
+          }
+        ],
+        "accessibility": ""
+      }
+    ],
+    "page_components": [
+      {
+        "component_name": "",
+        "description": "",
+        "route": "",
+        "layout": "",
+        "composition": []
+      }
+    ],
+    "layout_components": [
+      {
+        "component_name": "",
+        "description": "",
+        "slots": []
+      }
+    ],
+    "component_communication": {
+      "props_down": "",
+      "events_up": "",
+      "context_usage": "",
+      "state_sharing": ""
+    },
+    "component_reuse_strategy": {
+      "principles": [],
+      "composition_patterns": [],
+      "hoc_usage": "",
+      "render_props_usage": "",
+      "hooks_usage": ""
+    },
+    "component_division_rationality": ""
+  },
+
+  "step5_design_system": {
+    "design_tokens": {
+      "colors": {
+        "primary": "",
+        "secondary": "",
+        "success": "",
+        "danger": "",
+        "warning": "",
+        "info": "",
+        "neutral": {
+          "50": "",
+          "100": "",
+          "200": "",
+          "300": "",
+          "400": "",
+          "500": "",
+          "600": "",
+          "700": "",
+          "800": "",
+          "900": ""
+        },
+        "background": "",
+        "foreground": "",
+        "border": ""
+      },
+      "typography": {
+        "font_family": {
+          "base": "",
+          "heading": "",
+          "monospace": ""
+        },
+        "font_size": {
+          "xs": "",
+          "sm": "",
+          "base": "",
+          "lg": "",
+          "xl": "",
+          "2xl": "",
+          "3xl": "",
+          "4xl": ""
+        },
+        "font_weight": {
+          "light": "",
+          "normal": "",
+          "medium": "",
+          "semibold": "",
+          "bold": ""
+        },
+        "line_height": {
+          "tight": "",
+          "normal": "",
+          "relaxed": ""
+        }
+      },
+      "spacing": {
+        "xs": "",
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "xl": "",
+        "2xl": "",
+        "3xl": "",
+        "4xl": ""
+      },
+      "border_radius": {
+        "none": "",
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "full": ""
+      },
+      "shadows": {
+        "sm": "",
+        "md": "",
+        "lg": "",
+        "xl": ""
+      },
+      "z_index": {
+        "dropdown": "",
+        "sticky": "",
+        "fixed": "",
+        "modal_backdrop": "",
+        "modal": "",
+        "popover": "",
+        "tooltip": ""
+      }
+    },
+    "color_system": {
+      "semantic_colors": [],
+      "color_palette": [],
+      "dark_mode_support": false,
+      "dark_mode_colors": {}
+    },
+    "typography_system": {
+      "scale": [],
+      "headings": [],
+      "body_text": [],
+      "special_text": []
+    },
+    "spacing_system": {
+      "base_unit": "",
+      "scale": [],
+      "usage_guidelines": ""
+    },
+    "icon_system": {
+      "icon_library": "",
+      "custom_icons": [],
+      "icon_sizes": [],
+      "usage_guidelines": ""
+    },
+    "responsive_breakpoints": [
+      {
+        "name": "",
+        "min_width": "",
+        "purpose": ""
+      }
+    ],
+    "animation_system": {
+      "transitions": {
+        "duration": {
+          "fast": "",
+          "normal": "",
+          "slow": ""
+        },
+        "easing": {
+          "ease_in": "",
+          "ease_out": "",
+          "ease_in_out": ""
+        }
+      },
+      "animations": [],
+      "motion_principles": []
+    },
+    "component_style_standards": {
+      "naming_convention": "",
+      "style_organization": "",
+      "theming_approach": ""
+    },
+    "design_system_completeness": "",
+    "responsive_design_considered": ""
+  }
+}
