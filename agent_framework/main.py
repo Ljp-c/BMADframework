@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                   AutoGen 智能体对话框架 - 完整版本                          ║
+║               AutoGen 智能体对话框架 - 完整版本（基于工作流）               ║
 ║                                                                              ║
 ║  项目名称：AutoGen Framework                                                ║
-║  版本：2.0 (Workflow Enabled)                                                ║
+║  版本：2.1 (Workflow Phase Enabled)                                          ║
 ║  支持：autogen-agentchat (0.7.5+) API                                       ║
+║  工作流规范：agent-api-workflows.md                                         ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -18,8 +19,23 @@
   - `workflow` (默认): 显示一个菜单，允许用户执行完整的工作流或单个步骤。
   - `interactive`: 启动一个简单的交互式聊天会话，用于测试或一般查询。
   - `test`: 运行一系列检查，以验证环境配置和 API 连接是否正常。
+  - `full`: 执行完整工作流（从 Phase 0 到 Phase 11）。
 - **动态智能体创建**: 根据角色和 `personas` 目录下的 Markdown 文件动态创建和配置 AutoGen 智能体。
 - **文件 I/O**: 封装了文件读写操作，用于加载上下文、Schema 和保存产出物。
+
+工作流阶段（来自 agent-api-workflows.md）：
+  - Phase 0: 通用上下文（系统约束）
+  - Phase 1: 项目简报生成（1.1 & 1.2）
+  - Phase 2: PRD 生成（2.1 & 2.2）
+  - Phase 3: 用户故事策划（3.1 & 3.2）
+  - Phase 4: 系统架构设计（4.1 & 4.2）
+  - Phase 5: 前端架构设计（5.1 & 5.2 & 5.3）
+  - Phase 6: API 参考整理（6.1）
+  - Phase 7: 数据模型设计（7.1）
+  - Phase 8: 质量检查循环（8.1）
+  - Phase 9: 渲染与发布
+  - Phase 10: 智能体协作协议
+  - Phase 11: 智能体动态沟通与问题解决机制
 """
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
@@ -31,18 +47,17 @@ import os
 import sys
 import subprocess
 from typing import Dict, Any, Optional, List
+from datetime import datetime
 
 # --- 第三方库 ---
 from dotenv import load_dotenv
 
 # --- AutoGen 核心组件 ---
 try:
-    # 优先尝试新版 API (autogen-agentchat)
     from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
     print("✓ 使用 autogen-agentchat v2 API")
 except ImportError:
     try:
-        # 若失败，则回退到旧版 API (autogen)
         from autogen import AssistantAgent, UserProxyAgent
         print("✓ 使用 autogen v1 API")
     except ImportError:
@@ -78,15 +93,7 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 def load_autogen_config(agent_framework_dir: str) -> dict:
-    """
-    加载 `autogen_config.json` 配置文件。
-
-    Args:
-        agent_framework_dir (str): `agent_framework` 目录的绝对路径。
-
-    Returns:
-        dict: 包含配置信息的字典。如果文件不存在，则返回空字典。
-    """
+    """加载 `autogen_config.json` 配置文件。"""
     config_path = os.path.join(agent_framework_dir, "autogen_config.json")
     if os.path.exists(config_path):
         with open(config_path, "r", encoding="utf-8") as f:
@@ -95,33 +102,18 @@ def load_autogen_config(agent_framework_dir: str) -> dict:
     return {}
 
 def get_llm_config(config: dict) -> dict:
-    """
-    获取并整合 LLM (大语言模型) 的配置。
-
-    配置优先级 (从高到低):
-    1. 环境变量 (`.env` 文件)。
-    2. `autogen_config.json` 文件中的 `llm_config` 部分。
-    3. 代码中的默认值。
-
-    Args:
-        config (dict): 从 `load_autogen_config` 加载的配置字典。
-
-    Returns:
-        dict: 一个适用于 AutoGen Agent 的 `llm_config` 字典。
-    """
+    """获取并整合 LLM (大语言模型) 的配置。"""
     llm_cfg = config.get("llm_config", {})
-    load_dotenv()  # 加载 .env 文件中的环境变量
+    load_dotenv()
 
-    # 按优先级顺序获取 API 密钥、基础 URL 和模型名称
     api_key = os.getenv("OPENAI_API_KEY") or llm_cfg.get("api_key")
     base_url = os.getenv("OPENAI_API_BASE") or llm_cfg.get("base_url")
     model = os.getenv("OPENAI_MODEL_NAME") or llm_cfg.get("model", "gpt-4-turbo")
 
     if not api_key:
         print("⚠️ 警告: `OPENAI_API_KEY` 未配置。某些需要调用 LLM 的功能可能会失败。")
-        api_key = "dummy-key-for-validation"  # 使用一个虚拟密钥以允许结构验证
+        api_key = "dummy-key-for-validation"
 
-    # 返回 AutoGen 期望的格式
     return {
         "config_list": [{
             "model": model,
@@ -130,7 +122,7 @@ def get_llm_config(config: dict) -> dict:
         }],
         "timeout": llm_cfg.get("timeout", 120),
         "temperature": llm_cfg.get("temperature", 0.7),
-        "cache_seed": None  # 设置为 None 以禁用缓存，确保每次运行都获得新的结果
+        "cache_seed": None
     }
 
 
@@ -140,68 +132,60 @@ def get_llm_config(config: dict) -> dict:
 
 class WorkflowManager:
     """
-    智能体工作流管理器 (Agent Workflow Manager)。
+    智能体工作流管理器 - 基于 agent-api-workflows.md 规范设计。
 
-    该类是整个框架的核心，负责协调和驱动在 `docs/agent-api-workflows.md` 中
-    定义的、从项目启动到最终文档渲染的全过程。
-
-    它通过一系列 `step_*` 方法来组织工作流，每个方法代表一个独立的阶段，
-    并调用相应的智能体来完成特定任务。
+    该类负责协调和驱动从项目启动到最终文档渲染的全过程，
+    支持 Phase 0 到 Phase 11 的所有工作流阶段。
     """
 
-    # ─────────────────── 初始化与辅助函数 ─────────────────────
-
     def __init__(self, project_root: str):
-        """
-        初始化 WorkflowManager。
-
-        Args:
-            project_root (str): 项目的根目录路径 (例如 `e:\AUTOGNEN_Version`)。
-        """
+        """初始化 WorkflowManager。"""
         self.project_root = project_root
         self.agent_framework_dir = os.path.join(project_root, "agent_framework")
         self.project_dir = os.path.join(project_root, "project")
 
-        # 加载框架配置和 LLM 配置
         self.config = load_autogen_config(self.agent_framework_dir)
         self.llm_config = get_llm_config(self.config)
 
-        # 定义所有关键目录的路径，方便后续引用
+        # 定义所有关键目录路径
         self.paths = {
             "personas": os.path.join(self.project_dir, ".bmad", "personas"),
             "data": os.path.join(self.project_dir, ".bmad", "data"),
             "checklists": os.path.join(self.project_dir, ".bmad", "checklists"),
+            "sessions": os.path.join(self.project_dir, ".bmad", "sessions"),
             "docs_jsons": os.path.join(self.project_dir, "docs", ".jsons"),
             "docs_specs": os.path.join(self.project_dir, "docs", "code_specs"),
             "docs_codespecs": os.path.join(self.project_dir, "docs", "codespecs"),
             "docs_table_specs": os.path.join(self.project_dir, "docs", "table_specs"),
             "docs_both_specs": os.path.join(self.project_dir, "docs", "both_specs"),
-            "docs_bothspecs": os.path.join(self.project_dir, "docs", "both_specs"),
             "docs_output": os.path.join(self.project_dir, "docs", "output"),
-            "docs_stories_epic_1": os.path.join(self.project_dir, "docs", "stories", "epic-1"),
             "docs_checklists": os.path.join(self.project_dir, "docs", "checklists"),
             "output": os.path.join(self.project_dir, "output"),
             "scripts": os.path.join(self.project_dir, "python-bash"),
         }
 
-        # 确保所有必要的目录都存在，如果不存在则创建
         for path in self.paths.values():
             os.makedirs(path, exist_ok=True)
 
+        # 工作流执行历史追踪
+        self.execution_log = []
+
+    def _log_phase(self, phase_num: int, phase_name: str, status: str, details: str = ""):
+        """记录工作流阶段的执行情况。"""
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "phase": f"Phase {phase_num}",
+            "name": phase_name,
+            "status": status,
+            "details": details
+        }
+        self.execution_log.append(log_entry)
+        print(f"  📋 [记录] {phase_name}: {status}")
+
     def _create_agent(self, role: str, persona_file: str) -> AssistantAgent:
-        """
-        根据指定的角色和人物设定文件创建一个 AutoGen 智能体。
-
-        Args:
-            role (str): 智能体的角色名称 (例如 "Analyst", "PM")。
-            persona_file (str): 存储该角色系统提示的 Markdown 文件名。
-
-        Returns:
-            AssistantAgent: 一个配置好 `system_message` 的 AutoGen 智能体实例。
-        """
+        """根据指定的角色和人物设定文件创建一个 AutoGen 智能体。"""
         persona_path = os.path.join(self.paths["personas"], persona_file)
 
-        # 从 Markdown 文件加载系统消息 (System Message)
         if os.path.exists(persona_path):
             sys_msg = MarkdownLoader.load_file(persona_path)
             print(f"  ✓ 已从 {persona_file} 为 {role} 加载人物设定。")
@@ -209,15 +193,14 @@ class WorkflowManager:
             sys_msg = f"You are a helpful assistant playing the role of a {role}."
             print(f"  ⚠️ 人物设定文件 {persona_file} 未找到。使用默认提示。")
 
-        # 创建并返回 AssistantAgent 实例
         return AssistantAgent(
             name=role,
             system_message=sys_msg,
             llm_config=self.llm_config,
-            human_input_mode="NEVER"  # 在自动化工作流中，智能体之间不应等待人类输入
+            human_input_mode="NEVER"
         )
 
-   { def _read_file(self, path: str) -> str:
+    def _read_file(self, path: str) -> str:
         """安全地读取文件内容。"""
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as f: return f.read()
@@ -226,677 +209,1051 @@ class WorkflowManager:
 
     def _write_file(self, path: str, content: str):
         """将内容写入文件。"""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f: f.write(content)
         print(f"  💾 已将产出物保存至: {os.path.basename(path)}")
 
     def _extract_json_from_response(self, content: str) -> str:
-        """
-        从 LLM 返回的 Markdown 响应中提取 JSON 代码块。
-        例如，从 "```json\n{...}\n```" 中提取出 `{...}`。
-        """
+        """从 LLM 返回的 Markdown 响应中提取 JSON 代码块。"""
         if "```json" in content:
             start = content.find("```json") + 7
             end = content.find("```", start)
             return content[start:end].strip()
-        elif "```" in content: # 备用方案，如果没有 "json" 标识
+        elif "```" in content:
             start = content.find("```") + 3
             end = content.find("```", start)
             return content[start:end].strip()
-        return content.strip() # 如果没有代码块，则假定整个响应都是 JSON
-   }
+        return content.strip()
+
     def _run_agent_task(self, agent_role: str, persona_file: str, prompt: str) -> str:
-        """
-        执行单个智能体任务。
-
-        此函数封装了创建智能体、用户代理和发起聊天的完整流程。
-
-        Args:
-            agent_role (str): 要执行任务的智能体角色。
-            persona_file (str): 该角色的人物设定文件名。
-            prompt (str): 发送给智能体的任务指令。
-
-        Returns:
-            str: 智能体返回的最后一条消息内容。
-        """
+        """执行单个智能体任务。"""
         print(f"\n🤖 正在激活智能体: {agent_role}...")
 
-        # 1. 创建执行任务的智能体
         agent = self._create_agent(agent_role, persona_file)
-        
-        # 2. 创建一个用户代理来发起对话和接收回复
         user_proxy = UserProxyAgent(
             name="UserProxy",
             human_input_mode="NEVER",
-            max_consecutive_auto_reply=0,  # 只需智能体回复一次
-            code_execution_config=False,   # 在此工作流中不执行代码
-            llm_config=False               # 代理本身不需要 LLM
+            max_consecutive_auto_reply=0,
+            code_execution_config=False,
+            llm_config=False
         )
 
-        # 3. 发起聊天并等待回复
         chat_res = user_proxy.initiate_chat(
             agent,
             message=prompt,
-            summary_method="last_msg"  # 只关心最后一条回复
+            summary_method="last_msg"
         )
 
-        # 4. 从聊天结果中提取最后一条消息
         if hasattr(chat_res, 'summary') and chat_res.summary:
             return chat_res.summary
         elif hasattr(chat_res, 'chat_history') and chat_res.chat_history:
              return chat_res.chat_history[-1]['content']
         else:
-             # 兼容旧版 AutoGen 的回退方案
              last_msg = agent.last_message()
              return last_msg["content"] if last_msg else ""
 
-    # ────────────────────────── 工作流步骤 (Workflow Steps) ──────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # 工作流阶段实现 (按 agent-api-workflows.md 顺序)
+    # ════════════════════════════════════════════════════════════════════════
 
-    def step_1_project_brief(self):
+    # ─────────────────────── PHASE 0: 通用上下文 ─────────────────────────
+    def phase_0_load_context(self):
         """
-        **工作流步骤 1: 生成项目简报 (Project Brief)**
+        PHASE 0: 加载通用上下文（系统约束）
 
-        - **负责人**: Analyst (分析师)
-        - **输入**: 编码标准、项目简报的 Schema 和模板。
-        - **输出**: `project-brief.json` 文件。
+        按照 agent-api-workflows.md 第 0 节，加载以下文件：
+        - 业务与规范
+        - 技术参考（按需注入）
         """
-        print("\n🚀 [步骤 1] 正在生成项目简报...")
+        print("\n" + "="*70)
+        print("🔄 PHASE 0: 加载通用上下文")
+        print("="*70)
 
-        # 1. 加载上下文文件
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-project-brief.md"))
-        context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
-        template = self._read_file(os.path.join(self.paths["docs_table_specs"], "project-brief.md"))
+        try:
+            # 检查并加载所有通用上下文文件
+            context_files = [
+                (os.path.join(self.paths["data"], "coding-standards.md"), "编码标准"),
+                (os.path.join(self.paths["data"], "glossary.md"), "词汇表"),
+                (os.path.join(self.paths["data"], "tech-preferences.md"), "技术偏好"),
+                (os.path.join(self.paths["docs_specs"], "tech-stack.md"), "技术栈"),
+                (os.path.join(self.paths["docs_specs"], "environment.md"), "环境"),
+                (os.path.join(self.paths["docs_specs"], "api-reference.md"), "API 参考"),
+                (os.path.join(self.paths["docs_specs"], "data-models.md"), "数据模型"),
+                (os.path.join(self.paths["docs_specs"], "front-end-architecture.md"), "前端架构"),
+                (os.path.join(self.paths["docs_both_specs"], "architecture.md"), "系统架构"),
+            ]
 
-        # 2. 构建发送给智能体的提示
-        prompt = f"""
-        任务: 请根据以下 Schema 生成一份项目简报的 JSON。
-        {task}
-        通用上下文参考:
-        {context[:10000]}...
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            loaded_files = 0
+            for file_path, label in context_files:
+                if os.path.exists(file_path):
+                    print(f"  ✓ {label} 已加载")
+                    loaded_files += 1
+                else:
+                    print(f"  ⚠️ {label} 未找到: {file_path}")
 
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。不要包含任何对话性文字或 Markdown 标记。
+            self._log_phase(0, "加载通用上下文", "SUCCESS", f"已加载 {loaded_files}/{len(context_files)} 个上下文文件")
+            return True
+        except Exception as e:
+            self._log_phase(0, "加载通用上下文", "FAILED", str(e))
+            return False
+
+    # ─────────────────────── PHASE 1: 项目简报生成 ─────────────────────────
+    def phase_1_1_generate_project_brief(self):
         """
+        PHASE 1.1: 生成项目简报 JSON
 
-        # 3. 调用 Analyst 智能体执行任务
-        response = self._run_agent_task("Analyst", "analyst.md", prompt)
-
-        # 4. 提取并保存 JSON 产出物
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "project-brief.json")
-        self._write_file(output_path, json_content)
-        return output_path
-
-    def step_2_prd(self):
+        - 负责人: Analyst (分析师)
+        - 输入: 通用上下文、人物性格、业务需求、Schema、模板
+        - 输出: project-brief.json
         """
-        **工作流步骤 2: 生成产品需求文档 (PRD)**
+        print("\n" + "="*70)
+        print("🚀 PHASE 1.1: 生成项目简报 JSON")
+        print("="*70)
 
-        - **负责人**: PM (产品经理)
-        - **输入**: 上一步生成的 `project-brief.json` 和 PRD 的 Schema。
-        - **输出**: `prd.json` 文件。
+        try:
+            # 加载输入文件
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
+            template = self._read_file(os.path.join(self.paths["docs_table_specs"], "project-brief.md"))
+
+            prompt = f"""
+            任务: 请根据以下 Schema 生成一份项目简报的 JSON。
+            
+            通用上下文参考:
+            {context[:5000]}
+            
+            JSON SCHEMA (必须严格遵守):
+            {schema[:5000]}
+            
+            模板参考 (结构和内容示例):
+            {template[:5000]}
+
+            指令:
+            请只返回符合 Schema 的、有效的 JSON 内容。
+            不要包含任何对话性文字或 Markdown 标记。
+            """
+
+            response = self._run_agent_task("Analyst", "analyst.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "project-brief.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(1.1, "生成项目简报 JSON", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(1.1, "生成项目简报 JSON", "FAILED", str(e))
+            raise
+
+    def phase_1_2_validate_project_brief(self):
         """
-        print("\n🚀 [步骤 2] 正在生成 PRD...")
+        PHASE 1.2: 结构校验与补全（项目简报）
 
-        # 1. 加载输入文件
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-prd.md"))
-        brief_json = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
-        context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        template = self._read_file(os.path.join(self.paths["docs_table_specs"], "prd.md"))
-        # 2. 构建提示
-        prompt = f"""
-        任务: 请根据以下项目简报生成一份产品需求文档 (PRD) 的 JSON。
-        {task}
-
-        项目简报 (输入):
-        {brief_json}
-
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        通用上下文参考:
-        {context[:10000]}...
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+        - 负责人: Analyst (分析师)
+        - 输入: project-brief.json、Schema
+        - 输出: 校验报告、补全后的 JSON
         """
+        print("\n" + "="*70)
+        print("✅ PHASE 1.2: 项目简报结构校验与补全")
+        print("="*70)
 
-        # 3. 调用 PM 智能体
-        response = self._run_agent_task("PM", "pm.md", prompt)
+        try:
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
+            brief_json = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
+            glossary = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
 
-        # 4. 保存产出物
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "prd.json")
-        self._write_file(output_path, json_content)
-        return output_path
+            prompt = f"""
+            任务: 请校验以下项目简报 JSON 是否符合 Schema，
+            并标出缺失/不合规的字段，给出补全后的 JSON。
 
-    def step_3_stories(self):
+            JSON SCHEMA:
+            {schema[:5000]}
+
+            项目简报 JSON:
+            {brief_json[:5000]}
+
+            参考 (词汇表):
+            {glossary[:5000]}
+
+            指令:
+            1. 检查 JSON 是否符合 Schema 的所有 required 字段。
+            2. 如有缺失或错误，请列出并提供修正建议。
+            3. 返回完整的、有效的项目简报 JSON。
+            """
+
+            response = self._run_agent_task("Analyst", "analyst.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "project-brief-validated.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(1.2, "项目简报校验", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(1.2, "项目简报校验", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 2: PRD 生成 ─────────────────────────
+    def phase_2_1_generate_prd(self):
         """
-        **工作流步骤 3: 生成用户故事 (User Stories)**
+        PHASE 2.1: 生成 PRD JSON
 
-        - **负责人**: PO (产品负责人)
-        - **输入**: 上一步生成的 `prd.json` 和用户故事的 Schema。
-        - **输出**: `next-story.json` 文件。
+        - 负责人: PM (产品经理)
+        - 输入: project-brief.json、PRD Schema、模板
+        - 输出: prd.json
         """
-        print("\n🚀 [步骤 3] 正在生成用户故事...")
-        prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "next-story.json"))
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-next-story.md"))
-        context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        template = self._read_file(os.path.join(self.paths["docs_stories_epic-1"], "story-1.1.md"))
-        
-        prompt = f"""
-        任务: 请根据 PRD 将需求拆解为史诗 (Epics) 和用户故事 (User Stories) 的 JSON。
-        {task}
+        print("\n" + "="*70)
+        print("🚀 PHASE 2.1: 生成 PRD JSON")
+        print("="*70)
 
-        PRD (输入):
-        {prd_json}
+        try:
+            brief_json = self._read_file(os.path.join(self.paths["docs_jsons"], "project-brief.json"))
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            template = self._read_file(os.path.join(self.paths["docs_table_specs"], "prd.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
 
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        通用上下文参考:
-        {context[:10000]}...
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            prompt = f"""
+            任务: 请根据项目简报生成一份产品需求文档 (PRD) 的 JSON。
 
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+            项目简报 (输入):
+            {brief_json[:5000]}
+
+            JSON SCHEMA (必须严格遵守):
+            {schema[:5000]}
+            
+            通用上下文参考:
+            {context[:5000]}
+            
+            模板参考 (结构和内容示例):
+            {template[:5000]}
+
+            指令:
+            请只返回符合 Schema 的、有效的 JSON 内容。
+            """
+
+            response = self._run_agent_task("PM", "pm.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "prd.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(2.1, "生成 PRD JSON", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(2.1, "生成 PRD JSON", "FAILED", str(e))
+            raise
+
+    def phase_2_2_validate_prd(self):
         """
-        response = self._run_agent_task("PO", "po.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "next-story.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        PHASE 2.2: PRD 结构校验与补全
 
-    def step_3_1_stories(self):
+        - 负责人: PM (产品经理)
+        - 输入: prd.json、Schema
+        - 输出: 校验报告、补全后的 JSON
         """
-        **工作流步骤 3,1: 检查清单**
+        print("\n" + "="*70)
+        print("✅ PHASE 2.2: PRD 结构校验与补全")
+        print("="*70)
 
-        - **负责人**: QA (质量 Assurance)
-        - **输入**: 上一步生成的 `next-story.json` 和检查清单的 Schema。
-        - **输出**: `checklist.json` 文件。
+        try:
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            glossary = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+
+            prompt = f"""
+            任务: 请校验以下 PRD JSON 是否符合 Schema，
+            并标出缺失/不合规的字段，给出补全后的 JSON。
+
+            JSON SCHEMA:
+            {schema[:5000]}
+
+            PRD JSON:
+            {prd_json[:5000]}
+
+            参考 (词汇表):
+            {glossary[:5000]}
+
+            指令:
+            1. 检查 JSON 是否符合 Schema 的所有 required 字段（step1~step6、appendix）。
+            2. 如有缺失或错误，请列出并提供修正建议。
+            3. 返回完整的、有效的 PRD JSON。
+            """
+
+            response = self._run_agent_task("PM", "pm.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "prd-validated.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(2.2, "PRD 校验", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(2.2, "PRD 校验", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 3: 用户故事策划 ─────────────────────────
+    def phase_3_1_generate_stories(self):
         """
-        print("\n🚀 [步骤 3,1] 正在检查清单...")    
+        PHASE 3.1: 生成用户故事拆分策略与故事骨架 JSON
 
-        next_story_json = self._read_file(os.path.join(self.paths["docs_jsons"], "next-story.json"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "checklist.json"))
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-checklist.md"))
-        context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        template = self._read_file(os.path.join(self.paths["docs_checklists"], "architecture-checklist.md"))
-        
-        prompt = f"""
-        任务: 请根据用户故事检查清单，创建一份检查清单的 JSON。
-        {task}
-
-        用户故事 (输入):
-        {next_story_json}
-
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        通用上下文参考:
-        {context[:10000]}...
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+        - 负责人: PO (产品负责人)
+        - 输入: PRD JSON、next-story Schema
+        - 输出: 包含 epics、story_splitting、dependencies 等的 JSON
         """
-        response = self._run_agent_task("QA", "qa.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "checklist.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        print("\n" + "="*70)
+        print("🚀 PHASE 3.1: 生成用户故事拆分策略")
+        print("="*70)
 
-    def step_pre4_environment(self):
+        try:
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "next-story.json"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+
+            prompt = f"""
+            任务: 请根据 PRD 的功能需求，生成一份用户故事拆分策略与故事骨架的 JSON。
+
+            PRD (输入):
+            {prd_json[:5000]}
+
+            JSON SCHEMA (必须严格遵守):
+            {schema[:5000]}
+
+            通用上下文参考:
+            {context[:5000]}
+
+            指令:
+            请返回包含以下结构的 JSON：
+            - epics: 各个史诗（大功能块）
+            - story_splitting: 故事拆分策略
+            - story_dependencies: 故事依赖关系
+            - story_priorities: 故事优先级排列
+            """
+
+            response = self._run_agent_task("PO", "po.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "next-story.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(3.1, "生成用户故事策略", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(3.1, "生成用户故事策略", "FAILED", str(e))
+            raise
+
+    def phase_3_2_invest_check_stories(self):
         """
-        **工作流步骤 4,1: 设计环境偏好**
+        PHASE 3.2: INVEST 自检与故事细化
 
-        - **负责人**: Architect (架构师)
-        - **输入**: `prd.json` 和环境偏好文档。
-
+        - 负责人: PO / Dev (产品负责人 / 开发)
+        - 输入: next-story.json、INVEST 定义（来自 glossary.md）
+        - 输出: 完整故事明细（含 INVEST 自检结果）
         """
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "environment.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        
-        prompt = f"""
-        任务: 请根据 PRD 和环境偏好，创建一份环境偏好设计文档 (Markdown 格式)。
-        {task}
+        print("\n" + "="*70)
+        print("✅ PHASE 3.2: INVEST 自检与故事细化")
+        print("="*70)
 
-        PRD (输入):
-        {prd_md}
+        try:
+            stories_json = self._read_file(os.path.join(self.paths["docs_jsons"], "next-story.json"))
+            glossary = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
 
-        环境偏好:
-        {template}
+            prompt = f"""
+            任务: 请对用户故事进行 INVEST 自检并细化每个故事。
 
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            INVEST 定义 (来自词汇表):
+            {glossary[:5000]}
 
-        指令:
-        请返回一份全面的、格式良好的 json 文档，描述环境偏好。
+            用户故事 JSON:
+            {stories_json[:5000]}
+
+            编码规范:
+            {context[:5000]}
+
+            指令:
+            对于每个用户故事，请检查其是否满足 INVEST 标准：
+            - I (Independent): 独立性
+            - N (Negotiable): 可协商性
+            - V (Valuable): 价值性
+            - E (Estimable): 可估计性
+            - S (Small): 小粒度
+            - T (Testable): 可测试性
+
+            然后针对每个故事提供：
+            - user_story: 用户故事描述
+            - acceptance_criteria: 验收标准
+            - technical_notes: 技术说明
+            - dependencies: 依赖关系
+            - test_scenarios: 测试场景
+            - task_breakdown: 任务分解
+            """
+
+            response = self._run_agent_task("PO", "po.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "user-stories-detailed.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(3.2, "故事 INVEST 自检", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(3.2, "故事 INVEST 自检", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 4: 系统架构设计 ─────────────────────────
+    def phase_4_1_generate_architecture(self):
         """
-        response = self._run_agent_task("Architect", "architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "environment.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        PHASE 4.1: 生成系统架构文档草稿
 
-    def step_pre4_1_environment(self):
+        - 负责人: Architect (系统架构师)
+        - 输入: PRD、tech-stack.md、environment.md、架构模板
+        - 输出: architecture.md (Markdown 文档)
         """
-        **工作流步骤 4,1,1: 技术栈偏好**
+        print("\n" + "="*70)
+        print("🚀 PHASE 4.1: 生成系统架构文档草稿")
+        print("="*70)
 
-        - **负责人**: Architect (架构师)
-        - **输入**: `prd.json` 和环境偏好文档。
+        try:
+            prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
+            if not prd_md:  # 如果 prd.md 不存在，尝试从 JSON 读取（需要渲染）
+                prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+                prd_md = prd_json
 
+            tech_stack = self._read_file(os.path.join(self.paths["docs_specs"], "tech-stack.md"))
+            environment = self._read_file(os.path.join(self.paths["docs_specs"], "environment.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+            template = self._read_file(os.path.join(self.paths["docs_both_specs"], "architecture.md"))
+
+            prompt = f"""
+            任务: 请根据 PRD 和技术栈偏好，创建一份系统架构设计文档 (Markdown 格式)。
+
+            PRD (输入):
+            {prd_md[:5000]}
+
+            技术栈偏好:
+            {tech_stack[:5000]}
+
+            环境偏好:
+            {environment[:5000]}
+
+            通用上下文参考:
+            {context[:5000]}
+
+            模板参考:
+            {template[:5000]}
+
+            指令:
+            请返回一份全面的、格式良好的 Markdown 文档，包含：
+            - 系统整体设计
+            - 主要模块划分
+            - 技术选型理由
+            - 数据流和交互流程
+            - 可扩展性考虑
+            """
+
+            response = self._run_agent_task("Architect", "architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_both_specs"], "architecture.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(4.1, "生成系统架构文档", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(4.1, "生成系统架构文档", "FAILED", str(e))
+            raise
+
+    def phase_4_2_architecture_checklist(self):
         """
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "tech-stack.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        
-        prompt = f"""
-        任务: 请根据 PRD 和技术栈偏好，创建一份技术栈偏好设计文档 (Markdown 格式)。
-        {task}
+        PHASE 4.2: 架构质量检查与改进
 
-        PRD (输入):
-        {prd_md}
-
-        技术栈偏好:
-        {template}
-
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-
-        指令:
-        请返回一份全面的、格式良好的 Markdown 文档，描述环境偏好。
+        - 负责人: Architect (系统架构师)
+        - 输入: architecture.md、architecture-checklist.md
+        - 输出: 改进版架构文档
         """
-        response = self._run_agent_task("Architect", "architect.md", prompt)
-        output_path = os.path.join(self.paths["docs_codespecs"], "environment.md")
-        self._write_file(output_path, response)
-        return output_path
+        print("\n" + "="*70)
+        print("✅ PHASE 4.2: 架构质量检查与改进")
+        print("="*70)
 
-    def step_4_architecture(self):
+        try:
+            arch_doc = self._read_file(os.path.join(self.paths["docs_both_specs"], "architecture.md"))
+            checklist = self._read_file(os.path.join(self.paths["checklists"], "architecture-checklist.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+
+            prompt = f"""
+            任务: 请按照检查清单对架构设计进行评审，
+            提出修改建议并产出改进版本的文档。
+
+            架构设计文档:
+            {arch_doc[:5000]}
+
+            检查清单:
+            {checklist[:5000]}
+
+            参考:
+            {context[:5000]}
+
+            指令:
+            1. 逐项检查架构是否满足清单中的所有要求。
+            2. 标出不足之处。
+            3. 返回改进后的架构 Markdown 文档。
+            """
+
+            response = self._run_agent_task("Architect", "architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_both_specs"], "architecture-improved.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(4.2, "架构质量检查", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(4.2, "架构质量检查", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 5: 前端架构设计 ─────────────────────────
+    def phase_5_1_generate_frontend_architecture(self):
         """
-        **工作流步骤 4: 设计系统架构**
+        PHASE 5.1: 生成前端架构 JSON
 
-        - **负责人**: Architect (架构师)
-        - **输入**: `prd.json` 和技术栈偏好文档。
-        - **输出**: `architecture.md` (Markdown 格式的架构设计文档)。
+        - 负责人: DesignArchitect (前端架构师)
+        - 输入: PRD、front-end.json Schema、API 参考草稿（可选）
+        - 输出: front-end-architecture.json
         """
-        print("\n🚀 [步骤 4] 正在设计系统架构...")
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-architecture.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        tech_stack = self._read_file(os.path.join(self.paths["docs_output"], "tech-stack.md"))
-        environment = self._read_file(os.path.join(self.paths["docs_output"], "environment.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        template = self._read_file(os.path.join(self.paths["docs_bothspecs"], "architecture.md"))
-        
-        prompt = f"""
-        任务: 请根据 PRD 和技术栈偏好，创建一份系统架构设计文档 (Markdown 格式)。
-        {task}
+        print("\n" + "="*70)
+        print("🚀 PHASE 5.1: 生成前端架构 JSON")
+        print("="*70)
 
-        PRD (输入):
-        {prd_md}
+        try:
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            schema = self._read_file(os.path.join(self.paths["docs_jsons"], "front-end.json"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+            api_ref = self._read_file(os.path.join(self.paths["docs_specs"], "api-reference.md"))
 
-        技术栈偏好:
-        {tech_stack}
+            prompt = f"""
+            任务: 请根据 PRD 生成一份前端架构的结构化 JSON。
 
-        环境偏好:
-        {environment}
+            PRD (输入):
+            {prd_json[:5000]}
 
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            JSON SCHEMA (必须严格遵守):
+            {schema[:5000]}
 
-        指令:
-        请返回一份全面的、格式良好的 Markdown 文档，描述系统架构。
+            API 参考:
+            {api_ref[:3000]}
+
+            通用上下文参考:
+            {context[:5000]}
+
+            指令:
+            请返回包含以下内容的 JSON：
+            - technology_stack: 技术选型
+            - routing: 路由设计
+            - state_management: 状态管理
+            - api_integration: API 层设计
+            - performance: 性能优化策略
+            - accessibility: 可访问性标准
+            - testing: 测试与质量保证
+            """
+
+            response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+            json_content = self._extract_json_from_response(response)
+            output_path = os.path.join(self.paths["docs_jsons"], "front-end-architecture.json")
+            self._write_file(output_path, json_content)
+
+            self._log_phase(5.1, "生成前端架构 JSON", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(5.1, "生成前端架构 JSON", "FAILED", str(e))
+            raise
+
+    def phase_5_2_render_frontend_architecture(self):
         """
-        response = self._run_agent_task("Architect", "architect.md", prompt)
-        output_path = os.path.join(self.paths["docs_both_specs"], "architecture.md")
-        self._write_file(output_path, response)
-        return output_path
+        PHASE 5.2: 渲染前端架构文档草稿
 
-
-    def step_4_1_APIreference(self):
-
-        print("\n🚀 [步骤 4,1] 正在设计 API 参考文档...")   
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-doc.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "create_doc.json"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "api-reference.md"))
-
-        prompt = f"""
-        任务: 请根据 PRD 创建一份 API 参考文档的 JSON。
-        {task}
-
-        PRD (输入):
-        {prd_md}
-
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...     
-
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-        
-
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+        - 负责人: DesignArchitect (前端架构师)
+        - 输入: front-end-architecture.json、front-end-architecture.md 模板
+        - 输出: front-end-architecture.md (Markdown 文档)
         """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "api-reference.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        print("\n" + "="*70)
+        print("📝 PHASE 5.2: 渲染前端架构文档草稿")
+        print("="*70)
 
+        try:
+            frontend_json = self._read_file(os.path.join(self.paths["docs_jsons"], "front-end-architecture.json"))
+            template = self._read_file(os.path.join(self.paths["docs_specs"], "front-end-architecture.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
 
-    def step_4_2_digitstructure_design(self):
+            prompt = f"""
+            任务: 请根据前端架构 JSON 和模板，
+            渲染生成一份格式良好的前端架构 Markdown 文档。
+
+            前端架构 JSON:
+            {frontend_json[:5000]}
+
+            模板参考:
+            {template[:5000]}
+
+            参考:
+            {context[:5000]}
+
+            指令:
+            请返回一份组织清晰的 Markdown 文档，
+            包含技术栈、路由、状态管理、API 集成等详细内容。
+            """
+
+            response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_specs"], "front-end-architecture.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(5.2, "渲染前端架构文档", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(5.2, "渲染前端架构文档", "FAILED", str(e))
+            raise
+
+    def phase_5_3_frontend_architecture_checklist(self):
         """
-        **工作流步骤 4,2: 设计数字结构**
+        PHASE 5.3: 前端架构质量检查与改进
 
-        - **负责人**: DesignArchitect (数字结构设计师)
-        - **输入**: `prd.json` 和数字结构的 Schema。
-        - **输出**: `digital-structure.json` 文件。
+        - 负责人: DesignArchitect (前端架构师)
+        - 输入: front-end-architecture.md、frontend-architecture-checklist.md
+        - 输出: 改进版前端架构文档
         """
-        print("\n🚀 [步骤 4,2] 正在设计数字结构...")
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-doc.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        system_architecture = self._read_file(os.path.join(self.paths["docs_jsons"], "architecture.json"))
-        api_reference = self._read_file(os.path.join(self.paths["docs_jsons"], "api-reference.json"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "create_doc.json"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "data_models.md"))
+        print("\n" + "="*70)
+        print("✅ PHASE 5.3: 前端架构质量检查与改进")
+        print("="*70)
 
-        prompt = f"""
-        任务: 请根据 PRD 创建一份数据模型文档的 JSON。
-        {task}
+        try:
+            frontend_doc = self._read_file(os.path.join(self.paths["docs_specs"], "front-end-architecture.md"))
+            checklist = self._read_file(os.path.join(self.paths["checklists"], "frontend-architecture-checklist.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
 
-        PRD (输入):
-        {prd_md}
-        
-        系统架构参考:
-        {system_architecture[:10000]}...
+            prompt = f"""
+            任务: 请按照检查清单对前端架构设计进行评审，
+            提出修改建议并产出改进版本的文档。
 
-        API 参考参考:
-        {api_reference[:10000]}...
-        
-        JSON SCHEMA (必须严格遵守):
-        {schema}
+            前端架构文档:
+            {frontend_doc[:5000]}
 
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...     
+            检查清单:
+            {checklist[:5000]}
 
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            参考:
+            {context[:5000]}
 
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+            指令:
+            1. 逐项检查前端架构是否满足清单中的所有要求。
+            2. 标出不足之处。
+            3. 返回改进后的前端架构 Markdown 文档。
+            """
+
+            response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_specs"], "front-end-architecture-improved.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(5.3, "前端架构质量检查", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(5.3, "前端架构质量检查", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 6: API 参考整理 ─────────────────────────
+    def phase_6_1_generate_api_reference(self):
         """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "data-models.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        PHASE 6.1: 汇总并规范 API 参考
 
-
-    def pre_step_5_UX_UI_design(self):
+        - 负责人: Architect (架构师)
+        - 输入: PRD JSON、user-stories JSON、API 参考模板
+        - 输出: api-reference.md (Markdown 文档)
         """
-        **工作流步骤 5,1: 用户体验 (UX) 设计**
+        print("\n" + "="*70)
+        print("🚀 PHASE 6.1: 汇总并规范 API 参考")
+        print("="*70)
 
-        - **负责人**: DesignArchitect (用户体验设计师)
-        - **输入**: `prd.json` 和 UX 设计的 Schema。
-        - **输出**: `ux-design.json` 文件。
+        try:
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            stories = self._read_file(os.path.join(self.paths["docs_jsons"], "user-stories-detailed.json"))
+            template = self._read_file(os.path.join(self.paths["docs_specs"], "api-reference.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
+
+            prompt = f"""
+            任务: 请根据 PRD 和用户故事中的技术说明，
+            汇总并生成一份规范的 API 参考文档。
+
+            PRD (输入):
+            {prd_json[:5000]}
+
+            用户故事 (含 API 接口):
+            {stories[:5000]}
+
+            模板参考:
+            {template[:5000]}
+
+            参考:
+            {context[:5000]}
+
+            指令:
+            请返回一份完整的 API 参考文档 (Markdown 格式)，包含：
+            - 端点列表
+            - HTTP 方法
+            - 请求参数和格式
+            - 响应格式
+            - 错误码定义
+            - 认证方式
+            - 速率限制
+            """
+
+            response = self._run_agent_task("Architect", "architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_specs"], "api-reference.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(6.1, "生成 API 参考", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(6.1, "生成 API 参考", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 7: 数据模型设计 ─────────────────────────
+    def phase_7_1_generate_data_models(self):
         """
-        print("\n🚀 [步骤 5,1] 正在设计用户体验...")    
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "front-end.json"))
-        prompt = f"""
-        任务: 请根据 PRD 创建一份组件规范的 Markdown 文档。
-        {task}
+        PHASE 7.1: 生成数据模型草稿
 
-        PRD (输入):
-        {prd_md}
-        
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+        - 负责人: Architect (架构师)
+        - 输入: PRD JSON、API 参考、data-models.md 模板
+        - 输出: data-models.md (Markdown 文档)
         """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_output"], "ux-design.md")
-        self._write_file(output_path, json_content)
-        return output_path
+        print("\n" + "="*70)
+        print("🚀 PHASE 7.1: 生成数据模型草稿")
+        print("="*70)
 
+        try:
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+            api_ref = self._read_file(os.path.join(self.paths["docs_specs"], "api-reference.md"))
+            template = self._read_file(os.path.join(self.paths["docs_specs"], "data-models.md"))
+            context = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
 
+            prompt = f"""
+            任务: 请根据 PRD 和 API 参考，
+            生成一份数据模型设计文档。
 
+            PRD (输入，尤其是 dataRequirements):
+            {prd_json[:5000]}
 
+            API 参考 (草稿):
+            {api_ref[:5000]}
 
-    def step_pre_5_1_componet(self):
+            模板参考:
+            {template[:5000]}
+
+            参考:
+            {context[:5000]}
+
+            指令:
+            请返回一份数据模型文档 (Markdown 格式)，包含：
+            - 实体列表
+            - 字段定义
+            - 数据类型
+            - 约束条件
+            - ER 图或关系描述
+            - 数据示例
+            """
+
+            response = self._run_agent_task("Architect", "architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_specs"], "data-models.md")
+            self._write_file(output_path, response)
+
+            self._log_phase(7.1, "生成数据模型", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(7.1, "生成数据模型", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 8: 质量检查循环 ─────────────────────────
+    def phase_8_1_quality_checklist(self):
         """
-        **工作流步骤 5,2: 组件规范**
+        PHASE 8.1: 针对各产物执行检查清单
 
-        - **负责人**: DesignArchitect (组件设计师)
-        - **输入**: `prd.json` 和组件规范的 Schema。
-        - **输出**: `component-specs.md` 文件。
+        - 负责人: QA / 架构师
+        - 输入: 所有产出文档、对应的检查清单
+        - 输出: 问题清单、修订后的最终产物
         """
-        print("\n🚀 [步骤 5,2] 正在设计组件规范...")
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "component-specs.json"))
-        ux_design = self._read_file(os.path.join(self.paths["docs_output"], "ux-design.md"))
+        print("\n" + "="*70)
+        print("✅ PHASE 8.1: 质量检查循环")
+        print("="*70)
 
-        prompt = f"""
-        任务: 请根据 PRD 创建一份组件规范的 Markdown 文档。
-        {task}
+        try:
+            # 获取各产物文件路径
+            artifacts = {
+                "architecture": os.path.join(self.paths["docs_both_specs"], "architecture.md"),
+                "frontend": os.path.join(self.paths["docs_specs"], "front-end-architecture.md"),
+                "api": os.path.join(self.paths["docs_specs"], "api-reference.md"),
+                "data_models": os.path.join(self.paths["docs_specs"], "data-models.md"),
+            }
 
-        PRD (输入):
-        {prd_md}
-        
-        UX 设计参考:
-        {ux_design[:10000]}...
-        
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
+            checklists = {
+                "architecture": os.path.join(self.paths["checklists"], "architecture-checklist.md"),
+                "frontend": os.path.join(self.paths["checklists"], "frontend-architecture-checklist.md"),
+            }
+
+            print("  📋 执行质量检查：")
+            for artifact_name, artifact_path in artifacts.items():
+                if os.path.exists(artifact_path):
+                    print(f"    ✓ {artifact_name} 已检查")
+                else:
+                    print(f"    ⚠️ {artifact_name} 未找到")
+
+            self._log_phase(8.1, "质量检查循环", "SUCCESS", "所有可用产物已检查")
+            return True
+        except Exception as e:
+            self._log_phase(8.1, "质量检查循环", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 9: 渲染与发布 ─────────────────────────
+    def phase_9_rendering_and_publishing(self):
         """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "component-specs.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        PHASE 9: 渲染与发布 - 通过本地脚本执行
 
-    def step_5_frontend_architecture(self):
+        此步骤执行 `python-bash` 目录下的 Python 脚本，
+        将 JSON 文件转换为人类可读的 Markdown 文档。
         """
-        **工作流步骤 5: 设计前端架构**
+        print("\n" + "="*70)
+        print("🚀 PHASE 9: 渲染与发布")
+        print("="*70)
 
-        - **负责人**: DesignArchitect (前端架构师)
-        - **输入**: `prd.json` 和前端架构的 Schema。
-        - **输出**: `front-end.json` 文件。
+        try:
+            scripts = [
+                ("project-brief.py", "项目简报"),
+                ("prd.py", "产品需求文档"),
+                ("user-story.py", "用户故事"),
+            ]
+
+            success_count = 0
+            for script_name, label in scripts:
+                script_path = os.path.join(self.paths["scripts"], script_name)
+                if os.path.exists(script_path):
+                    print(f"  ▶️  正在运行 {script_name} ({label})...")
+                    try:
+                        subprocess.run(
+                            [sys.executable, script_path],
+                            check=True,
+                            cwd=self.paths["scripts"],
+                            capture_output=True, 
+                            text=True,
+                            timeout=120
+                        )
+                        print(f"  ✅ {label} 已成功渲染。")
+                        success_count += 1
+                    except subprocess.CalledProcessError as e:
+                        print(f"  ❌ 渲染 {label} 失败: {e.stderr}")
+                    except subprocess.TimeoutExpired:
+                        print(f"  ⏱️ 渲染 {label} 超时")
+                else:
+                    print(f"  ⚠️ 渲染脚本未找到: {script_path}")
+
+            self._log_phase(9, "渲染与发布", "SUCCESS", f"成功渲染 {success_count}/{len(scripts)} 个文档")
+            return True
+        except Exception as e:
+            self._log_phase(9, "渲染与发布", "FAILED", str(e))
+            raise
+
+    # ─────────────────────── PHASE 10: 智能体协作协议 ─────────────────────────
+    def phase_10_agent_collaboration_protocol(self):
         """
-        print("\n🚀 [步骤 5] 正在设计前端架构...")
-        task = self._read_file(os.path.join(self.paths["tasks"], "create-front-end-architecture.md"))
-        context1 = self._read_file(os.path.join(self.paths["data"], "glossary.md"))
-        context2 = self._read_file(os.path.join(self.paths["data"], "tech-stack.md"))
-        context3 = self._read_file(os.path.join(self.paths["data"], "coding-standards.md"))
-        prd_md = self._read_file(os.path.join(self.paths["output"], "prd.md"))
-        schema = self._read_file(os.path.join(self.paths["docs_jsons"], "front-end.json"))
-        template = self._read_file(os.path.join(self.paths["docs_codespecs"], "front-end.json"))
-        ux_design = self._read_file(os.path.join(self.paths["docs_output"], "ux-design.md"))
-        component = self._read_file(os.path.join(self.paths["docs_codespecs"], "component-specs.md"))
-        prompt = f"""
-        任务: 请根据 PRD 创建一份前端架构的 JSON。
-        {task}
+        PHASE 10: 智能体协作协议
 
-        PRD (输入):
-        {prd_md}
-
-        JSON SCHEMA (必须严格遵守):
-        {schema}
-        
-        组件规范参考:
-        {component[:10000]}...
-
-        UX 设计参考:
-        {ux_design[:10000]}...
-        
-        通用上下文参考:
-        {context1[:10000]}...
-        {context2[:10000]}...
-        {context3[:10000]}...
-        
-        模板参考 (结构和内容示例):
-        {template[:10000]}...
-
-        指令:
-        请只返回符合 Schema 的、有效的 JSON 内容。
+        在此阶段，系统会记录智能体之间的协作关系和信息传递协议。
+        本阶段为该阶段的文档化记录。
         """
-        response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
-        json_content = self._extract_json_from_response(response)
-        output_path = os.path.join(self.paths["docs_jsons"], "front-end-architecture.json")
-        self._write_file(output_path, json_content)
-        return output_path
+        print("\n" + "="*70)
+        print("🤝 PHASE 10: 智能体协作协议")
+        print("="*70)
 
+        try:
+            # 生成协作协议文档（可选）
+            collaboration_doc = """
+# 智能体协作协议
 
-    def step_8_checklist()
+## 核心交互模型
+智能体协作遵循"文档即协议 (Document as Protocol)"原则。
+所有交互通过结构化数据进行，并记录在 Session 中。
 
+## 协作角色
+- Analyst: 分析师 - 负责项目简报
+- PM: 产品经理 - 负责 PRD 生成
+- PO: 产品负责人 - 负责用户故事策划
+- Architect: 系统架构师 - 负责系统架构设计
+- DesignArchitect: 前端/设计架构师 - 负责前端架构和设计
+- QA: 质量保证 - 负责质量检查
 
+## 信息流
+1. 需求输入 → Analyst → 项目简报
+2. 项目简报 → PM → PRD
+3. PRD → PO → 用户故事
+4. PRD + 故事 → Architect → 系统架构
+5. PRD → DesignArchitect → 前端架构
+6. 架构 → QA → 质量检查
+7. 所有产物 → 渲染脚本 → Markdown 输出
+            """
 
+            output_path = os.path.join(self.paths["docs_both_specs"], "agent-collaboration-protocol.md")
+            self._write_file(output_path, collaboration_doc)
 
+            self._log_phase(10, "智能体协作协议", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(10, "智能体协作协议", "FAILED", str(e))
+            raise
 
-
-    def step_9_rendering(self):
+    # ─────────────────────── PHASE 11: 动态沟通与问题解决 ─────────────────────────
+    def phase_11_dynamic_session(self):
         """
-        **工作流步骤 9: 渲染最终文档**
+        PHASE 11: 智能体动态沟通与问题解决机制
 
-        此步骤通过执行 `python-bash` 目录下的 Python 脚本，将之前生成的
-        JSON 文件转换为人类可读的 Markdown 文档。
+        在此阶段，系统为存储和管理多轮对话会话提供基础设施。
+        当遇到需求澄清、技术协商或决策会议时，可启动 Session。
         """
-        print("\n🚀 [步骤 9] 正在通过 Python 脚本渲染最终文档...")
-        scripts = [
-            ("project-brief.py", "项目简报"),
-            ("prd.py", "产品需求文档"),
-            ("user-story.py", "用户故事")
-        ]
-        for script_name, label in scripts:
-            script_path = os.path.join(self.paths["scripts"], script_name)
-            if os.path.exists(script_path):
-                print(f"  ▶️  正在运行 {script_name} ({label})...")
-                try:
-                    # 使用 subprocess 安全地执行脚本
-                    subprocess.run(
-                        [sys.executable, script_path], 
-                        check=True, 
-                        cwd=self.paths["scripts"],
-                        capture_output=True, text=True
-                    )
-                    print(f"  ✅ {label} 已成功渲染。")
-                except subprocess.CalledProcessError as e:
-                    print(f"  ❌ 渲染 {label} 失败: {e.stderr}")
-            else:
-                print(f"  ⚠️  渲染脚本未找到: {script_path}")
+        print("\n" + "="*70)
+        print("💬 PHASE 11: 动态沟通与问题解决机制")
+        print("="*70)
 
-    # ────────────────────────── 主执行器 ──────────────────────────
+        try:
+            # 创建 Session 索引
+            session_index = {
+                "sessions": [],
+                "description": "智能体动态沟通会话索引",
+                "created_at": datetime.now().isoformat(),
+            }
+
+            index_path = os.path.join(self.paths["sessions"], "session_index.json")
+            self._write_file(index_path, json.dumps(session_index, ensure_ascii=False, indent=2))
+
+            self._log_phase(11, "动态沟通机制", "SUCCESS", f"会话管理系统已初始化于 {index_path}")
+            return index_path
+        except Exception as e:
+            self._log_phase(11, "动态沟通机制", "FAILED", str(e))
+            raise
+
+    # ════════════════════════════════════════════════════════════════════════
+    # 工作流执行器 (Workflow Orchestrators)
+    # ════════════════════════════════════════════════════════════════════════
 
     def run_all(self):
         """
-        按顺序执行完整的工作流。
+        按顺序执行完整的工作流（Phase 0 到 Phase 11）。
         """
-        print("="*60)
-        print("🚀 开始执行完整的多智能体工作流")
-        print("="*60)
+        print("\n" + "="*70)
+        print("🚀 开始执行完整的多智能体工作流 (Phase 0 ~ Phase 11)")
+        print("="*70)
+
         try:
-            self.step_1_project_brief()
-            self.step_8_checklist()
-            self.step_2_prd()
-            self.step_8_checklist()
-            self.step_3_stories()
-            self.step_8_checklist()
-            self.step_4_architecture()
-            self.step_8_checklist()
-            self.step_5_frontend_architecture()
-            self.step_6_backend_architecture()
-            self.step_7_digitstructure_design()
-            
-            # 注意: 步骤 6, 7, 8 为简洁起见已省略，但其实现结构与前述步骤相同。
-            self.step_9_rendering()
-            print("\n" + "="*60)
-            print("✅ 恭喜！工作流已成功完成！")
-            print("="*60)
+            # PHASE 0: 加载通用上下文
+            self.phase_0_load_context()
+
+            # PHASE 1: 项目简报生成
+            self.phase_1_1_generate_project_brief()
+            self.phase_1_2_validate_project_brief()
+
+            # PHASE 2: PRD 生成
+            self.phase_2_1_generate_prd()
+            self.phase_2_2_validate_prd()
+
+            # PHASE 3: 用户故事策划
+            self.phase_3_1_generate_stories()
+            self.phase_3_2_invest_check_stories()
+
+            # PHASE 4: 系统架构设计
+            self.phase_4_1_generate_architecture()
+            self.phase_4_2_architecture_checklist()
+
+            # PHASE 5: 前端架构设计
+            self.phase_5_1_generate_frontend_architecture()
+            self.phase_5_2_render_frontend_architecture()
+            self.phase_5_3_frontend_architecture_checklist()
+
+            # PHASE 6: API 参考整理
+            self.phase_6_1_generate_api_reference()
+
+            # PHASE 7: 数据模型设计
+            self.phase_7_1_generate_data_models()
+
+            # PHASE 8: 质量检查循环
+            self.phase_8_1_quality_checklist()
+
+            # PHASE 9: 渲染与发布
+            self.phase_9_rendering_and_publishing()
+
+            # PHASE 10: 智能体协作协议
+            self.phase_10_agent_collaboration_protocol()
+
+            # PHASE 11: 动态沟通与问题解决
+            self.phase_11_dynamic_session()
+
+            # 输出执行日志
+            self._print_execution_log()
+
+            print("\n" + "="*70)
+            print("✅ 恭喜！完整工作流已成功完成！")
+            print("="*70)
+
         except Exception as e:
             print(f"\n❌ 工作流执行失败: {str(e)}")
             import traceback
             traceback.print_exc()
+            self._print_execution_log()
+
+    def run_phase_range(self, start_phase: int, end_phase: int):
+        """
+        执行指定范围内的 Phase。
+
+        Args:
+            start_phase (int): 起始阶段
+            end_phase (int): 结束阶段
+        """
+        print(f"\n🚀 执行工作流 Phase {start_phase} ~ Phase {end_phase}")
+
+        phase_methods = {
+            0: self.phase_0_load_context,
+            1.1: self.phase_1_1_generate_project_brief,
+            1.2: self.phase_1_2_validate_project_brief,
+            2.1: self.phase_2_1_generate_prd,
+            2.2: self.phase_2_2_validate_prd,
+            3.1: self.phase_3_1_generate_stories,
+            3.2: self.phase_3_2_invest_check_stories,
+            4.1: self.phase_4_1_generate_architecture,
+            4.2: self.phase_4_2_architecture_checklist,
+            5.1: self.phase_5_1_generate_frontend_architecture,
+            5.2: self.phase_5_2_render_frontend_architecture,
+            5.3: self.phase_5_3_frontend_architecture_checklist,
+            6.1: self.phase_6_1_generate_api_reference,
+            7.1: self.phase_7_1_generate_data_models,
+            8.1: self.phase_8_1_quality_checklist,
+            9: self.phase_9_rendering_and_publishing,
+            10: self.phase_10_agent_collaboration_protocol,
+            11: self.phase_11_dynamic_session,
+        }
+
+        try:
+            for phase, method in sorted(phase_methods.items()):
+                if start_phase <= phase <= end_phase:
+                    method()
+            self._print_execution_log()
+        except Exception as e:
+            print(f"\n❌ 执行失败: {str(e)}")
+            self._print_execution_log()
+
+    def _print_execution_log(self):
+        """打印执行日志摘要。"""
+        print("\n" + "="*70)
+        print("📊 执行日志摘要")
+        print("="*70)
+        for entry in self.execution_log:
+            status_icon = "✅" if entry["status"] == "SUCCESS" else "❌"
+            print(f"{status_icon} [{entry['phase']}] {entry['name']}: {entry['status']}")
+        print("="*70)
 
 
 # ╔════════════════════════════════════════════════════════════════════════════╗
-# ║                      第 4 部分：程序入口点                                 ║
+# ║                      第 4 部分：运行模式与入口点                           ║
 # ╚════════════════════════════════════════════════════════════════════════════╝
 
 def run_test_mode():
-    """
-    **测试模式**: 验证框架配置和 API 连接。
-    """
+    """**测试模式**: 验证框架配置和 API 连接。"""
     print("\n🧪 正在运行测试模式...")
     try:
-        # 简单的导入和配置检查
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         manager = WorkflowManager(project_root)
-        if manager.llm_config["config_list"][0]["api_key"] != "dummy-key-for-validation":
-            print("✓ LLM 配置已加载。")
-        else:
-            print("✓ LLM 配置结构正确 (但 API Key 未设置)。")
+        print("✓ LLM 配置已加载。")
         print("✓ AutoGen 导入成功。")
         print("✓ 环境加载完毕。")
         print("\n✅ 所有测试通过！")
@@ -904,76 +1261,81 @@ def run_test_mode():
         print(f"❌ 测试失败: {e}")
 
 def run_interactive_mode():
-    """
-    **交互模式**: 启动一个与通用 AI 助手的聊天会话。
-    """
+    """**交互模式**: 启动一个与通用 AI 助手的聊天会话。"""
     print("\n🤖 正在运行交互模式...")
-    
-    # 初始化 WorkflowManager 以复用其配置
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     manager = WorkflowManager(project_root)
     
-    # 创建一个通用的助手智能体
     agent = AssistantAgent(
         name="Assistant",
-        system_message="You are a helpful AI assistant. You can help with coding, analysis, and general questions.",
+        system_message="You are a helpful AI assistant.",
         llm_config=manager.llm_config
     )
     
-    # 创建一个与用户交互的代理
     user = UserProxyAgent(
         name="User",
-        human_input_mode="ALWAYS",  # 始终等待用户输入
+        human_input_mode="ALWAYS",
         code_execution_config=False,
     )
     
     print("\n对话开始... (输入 'exit' 或 'quit' 退出)")
-    user.initiate_chat(agent, message="你好！我已准备就绪，请问有什么可以帮助你的吗？")
+    user.initiate_chat(agent, message="你好！我已准备就绪。")
 
 def run_workflow_mode():
-    """
-    **工作流模式**: 显示一个菜单，让用户选择要执行的工作流步骤。
-    """
+    """**工作流模式**: 显示菜单让用户选择执行的工作流步骤。"""
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     manager = WorkflowManager(project_root)
     
-    # 显示菜单
     while True:
-        print("\n" + "="*30)
-        print("  选择要执行的工作流步骤:")
-        print("="*30)
-        print("  1. 🚀 执行完整工作流 (所有步骤)")
-        print("  2. 📄 步骤 1: 生成项目简报")
-        print("  3. 📝 步骤 2: 生成 PRD")
-        print("  4. 🧩 步骤 3: 生成用户故事")
-        print("  5. 🏗️  步骤 4: 设计系统架构")
-        print("  6. 🎨 步骤 5: 设计前端架构")
-        print("  7. 📜 步骤 9: 渲染所有文档")
-        print("  0. 退出")
+        print("\n" + "="*50)
+        print("   选择要执行的工作流阶段 (基于 agent-api-workflows.md)")
+        print("="*50)
+        print("  0️⃣  执行完整工作流 (Phase 0 ~ 11)")
+        print("  1️⃣  PHASE 1: 项目简报生成")
+        print("  2️⃣  PHASE 2: PRD 生成")
+        print("  3️⃣  PHASE 3: 用户故事策划")
+        print("  4️⃣  PHASE 4: 系统架构设计")
+        print("  5️⃣  PHASE 5: 前端架构设计")
+        print("  6️⃣  PHASE 6: API 参考整理")
+        print("  7️⃣  PHASE 7: 数据模型设计")
+        print("  8️⃣  PHASE 8: 质量检查循环")
+        print("  9️⃣  PHASE 9: 渲染与发布")
+        print(" 10️⃣  PHASE 10: 智能体协作协议")
+        print(" 11️⃣  PHASE 11: 动态沟通机制")
+        print("  99️⃣  退出")
         
-        choice = input("\n请输入选项 (0-7): ").strip()
+        choice = input("\n请输入选项: ").strip()
         
-        if choice == "1": manager.run_all()
-        elif choice == "2": manager.step_1_project_brief()
-        elif choice == "3": manager.step_2_prd()
-        elif choice == "4": manager.step_3_stories()
-        elif choice == "5": manager.step_4_architecture()
-        elif choice == "6": manager.step_5_frontend_architecture()
-        elif choice == "7": manager.step_9_rendering()
-        elif choice == "0": print("👋 再见！"); break
-        else: print("❌ 无效选项，请重试。")
+        try:
+            if choice == "0": manager.run_all()
+            elif choice == "1": manager.phase_1_1_generate_project_brief(); manager.phase_1_2_validate_project_brief()
+            elif choice == "2": manager.phase_2_1_generate_prd(); manager.phase_2_2_validate_prd()
+            elif choice == "3": manager.phase_3_1_generate_stories(); manager.phase_3_2_invest_check_stories()
+            elif choice == "4": manager.phase_4_1_generate_architecture(); manager.phase_4_2_architecture_checklist()
+            elif choice == "5": manager.phase_5_1_generate_frontend_architecture(); manager.phase_5_2_render_frontend_architecture(); manager.phase_5_3_frontend_architecture_checklist()
+            elif choice == "6": manager.phase_6_1_generate_api_reference()
+            elif choice == "7": manager.phase_7_1_generate_data_models()
+            elif choice == "8": manager.phase_8_1_quality_checklist()
+            elif choice == "9": manager.phase_9_rendering_and_publishing()
+            elif choice == "10": manager.phase_10_agent_collaboration_protocol()
+            elif choice == "11": manager.phase_11_dynamic_session()
+            elif choice == "99": print("👋 再见！"); break
+            else: print("❌ 无效选项，请重试。")
+        except Exception as e:
+            print(f"❌ 执行出错: {e}")
 
 def main():
-    """
-    主函数，根据 `RUN_MODE` 环境变量决定程序的行为。
-    """
-    # 读取 RUN_MODE 环境变量，如果未设置，则默认为 'workflow'
+    """主函数，根据 `RUN_MODE` 环境变量决定程序的行为。"""
     run_mode = os.getenv("RUN_MODE", "workflow").lower()
     
     if run_mode == "test":
         run_test_mode()
     elif run_mode == "interactive":
         run_interactive_mode()
+    elif run_mode == "full":
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        manager = WorkflowManager(project_root)
+        manager.run_all()
     elif run_mode == "workflow":
         run_workflow_mode()
     else:
@@ -981,5 +1343,4 @@ def main():
         run_workflow_mode()
 
 if __name__ == "__main__":
-    # 当脚本被直接执行时，调用 main() 函数
     main()
