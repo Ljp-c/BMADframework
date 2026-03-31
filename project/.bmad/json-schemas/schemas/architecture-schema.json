@@ -1,0 +1,12 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: 系统架构 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    system_overview: {type: string},
+    design_principles: {type: array},
+    layers: {type: array},
+    components: {type: array}
+  }
+}

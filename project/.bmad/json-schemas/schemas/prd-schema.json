@@ -1,0 +1,12 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: 产品需求文档 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    product_name: {type: string},
+    executive_summary: {type: string},
+    key_features: {type: array},
+    functional_requirements: {type: array}
+  }
+}

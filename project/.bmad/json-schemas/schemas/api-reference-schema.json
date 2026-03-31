@@ -1,0 +1,11 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: API 参考 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    api_modules: {type: array},
+    authentication: {type: object},
+    error_codes: {type: array}
+  }
+}

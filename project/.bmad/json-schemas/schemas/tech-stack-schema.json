@@ -1,0 +1,11 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: 技术栈 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    frontend: {type: array},
+    backend: {type: array},
+    infrastructure: {type: array}
+  }
+}

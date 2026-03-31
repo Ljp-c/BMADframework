@@ -1,0 +1,11 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: 环境配置 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    development: {type: object},
+    testing: {type: object},
+    production: {type: object}
+  }
+}

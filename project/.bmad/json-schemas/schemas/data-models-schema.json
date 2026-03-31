@@ -1,0 +1,10 @@
+﻿{
+  $schema: http://json-schema.org/draft-07/schema#,
+  title: 数据模型 Schema,
+  type: object,
+  properties: {
+    document_info: {type: object},
+    entities: {type: array},
+    enums: {type: array}
+  }
+}

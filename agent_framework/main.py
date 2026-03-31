@@ -146,6 +146,7 @@ class WorkflowManager:
 
         self.config = load_autogen_config(self.agent_framework_dir)
         self.llm_config = get_llm_config(self.config)
+        self.global_context = ""
 
         # 定义所有关键目录路径
         self.paths = {
@@ -256,31 +257,46 @@ class WorkflowManager:
     # 工作流阶段实现 (按 agent-api-workflows.md 顺序)
     # ════════════════════════════════════════════════════════════════════════
 
+    def _get_consolidated_context(self) -> str:
+        """
+        根据 Phase 0 定义，读取所有核心上下文文件并合并为一个大字符串。
+        """
+        context_files = [
+            (os.path.join(self.paths["data"], "coding-standards.md"), "编码标准"),
+            (os.path.join(self.paths["data"], "glossary.md"), "词汇表"),
+            (os.path.join(self.paths["data"], "tech-preferences.md"), "技术偏好"),
+            (os.path.join(self.paths["docs_codespecs"], "tech-stack.md"), "技术栈"),
+            (os.path.join(self.paths["docs_codespecs"], "environment.md"), "环境"),
+        ]
+        
+        consolidated = "# GLOBAL CONTEXT & CONSTRAINTS\n\n"
+        for file_path, label in context_files:
+            if os.path.exists(file_path):
+                content = self._read_file(file_path)
+                consolidated += f"## {label} ({os.path.basename(file_path)})\n{content}\n\n"
+        return consolidated
+
     # ─────────────────────── PHASE 0: 通用上下文 ─────────────────────────
     def phase_0_load_context(self):
         """
-        PHASE 0: 加载通用上下文（系统约束）
+        PHASE 0: 加载并整合通用上下文（系统约束）
 
-        按照 agent-api-workflows.md 第 0 节，加载以下文件：
-        - 业务与规范
-        - 技术参考（按需注入）
+        按照 agent-api-workflows.md 第 0 节，加载并整合所有关键上下文文件。
         """
         print("\n" + "="*70)
-        print("🔄 PHASE 0: 加载通用上下文")
+        print("🔄 PHASE 0: 加载并整合通用上下文")
         print("="*70)
 
         try:
-            # 检查并加载所有通用上下文文件
+            self.global_context = self._get_consolidated_context()
+            
+            # 同时打印一下加载状态
             context_files = [
                 (os.path.join(self.paths["data"], "coding-standards.md"), "编码标准"),
                 (os.path.join(self.paths["data"], "glossary.md"), "词汇表"),
                 (os.path.join(self.paths["data"], "tech-preferences.md"), "技术偏好"),
-                (os.path.join(self.paths["docs_specs"], "tech-stack.md"), "技术栈"),
-                (os.path.join(self.paths["docs_specs"], "environment.md"), "环境"),
-                (os.path.join(self.paths["docs_specs"], "api-reference.md"), "API 参考"),
-                (os.path.join(self.paths["docs_specs"], "data-models.md"), "数据模型"),
-                (os.path.join(self.paths["docs_specs"], "front-end-architecture.md"), "前端架构"),
-                (os.path.join(self.paths["docs_both_specs"], "architecture.md"), "系统架构"),
+                (os.path.join(self.paths["docs_codespecs"], "tech-stack.md"), "技术栈"),
+                (os.path.join(self.paths["docs_codespecs"], "environment.md"), "环境"),
             ]
 
             loaded_files = 0
@@ -291,10 +307,11 @@ class WorkflowManager:
                 else:
                     print(f"  ⚠️ {label} 未找到: {file_path}")
 
-            self._log_phase(0, "加载通用上下文", "SUCCESS", f"已加载 {loaded_files}/{len(context_files)} 个上下文文件")
+            print(f"  ✓ 全局上下文已整合 (约 {len(self.global_context)} 字符)")
+            self._log_phase(0, "整合通用上下文", "SUCCESS", f"已加载 {loaded_files}/{len(context_files)} 个上下文文件")
             return True
         except Exception as e:
-            self._log_phase(0, "加载通用上下文", "FAILED", str(e))
+            self._log_phase(0, "整合通用上下文", "FAILED", str(e))
             return False
 
     # ─────────────────────── PHASE 1: 项目简报生成 ─────────────────────────
@@ -701,6 +718,53 @@ class WorkflowManager:
             self._log_phase(4.2, "架构质量检查", "FAILED", str(e))
             raise
 
+    # ─────────────────────── PHASE 4.3: UV/UX 设计 ─────────────────────────
+    def phase_4_3_uv_ux_design(self):
+        """
+        PHASE 4.3: UV/UX 设计（新增阶段）
+        根据 PRD 设计交互原型说明。
+        """
+        print("\n" + "="*70)
+        print("🎨 PHASE 4.3: UV/UX 设计")
+        print("="*70)
+
+        try:
+            template_path = os.path.join(self.paths["docs_tablespecs"], "uv-ux.md")
+            if not os.path.exists(template_path):
+                print("  ⏭️  UV/UX 模板未找到，跳过此阶段。")
+                return
+
+            prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd-validated.json"))
+            if not prd_json:
+                prd_json = self._read_file(os.path.join(self.paths["docs_jsons"], "prd.json"))
+
+            template = self._read_file(template_path)
+
+            prompt = f"""
+            任务: 基于 PRD 生成系统的 UV/UX 设计说明。
+            
+            全局上下文:
+            {self.global_context[:2000]}
+            
+            PRD 内容:
+            {prd_json[:3000]}
+            
+            模板参考:
+            {template[:3000]}
+            
+            指令: 请产出包含 用户路径(User Flow)、核心交互组件、视觉风格定义 的 Markdown 文档。
+            """
+            
+            response = self._run_agent_task("DesignArchitect", "design-architect.md", prompt)
+            output_path = os.path.join(self.paths["docs_output"], "uv-ux-design.md")
+            self._write_file(output_path, response)
+            
+            self._log_phase(4.3, "UV/UX 设计", "SUCCESS", f"已保存至 {output_path}")
+            return output_path
+        except Exception as e:
+            self._log_phase(4.3, "UV/UX 设计", "FAILED", str(e))
+            raise
+
     # ─────────────────────── PHASE 5: 前端架构设计 ─────────────────────────
     def phase_5_1_generate_frontend_architecture(self):
         """
@@ -962,41 +1026,76 @@ class WorkflowManager:
     # ─────────────────────── PHASE 8: 质量检查循环 ─────────────────────────
     def phase_8_1_quality_checklist(self):
         """
-        PHASE 8.1: 针对各产物执行检查清单
+        PHASE 8.1: 智能质量评审循环 (LLM-based)
 
         - 负责人: QA / 架构师
         - 输入: 所有产出文档、对应的检查清单
-        - 输出: 问题清单、修订后的最终产物
+        - 输出: 修订后的最终产物 (*-final.md)
         """
         print("\n" + "="*70)
-        print("✅ PHASE 8.1: 质量检查循环")
+        print("🧐 PHASE 8.1: 智能质量评审")
         print("="*70)
 
         try:
-            # 获取各产物文件路径
-            artifacts = {
-                "architecture": os.path.join(self.paths["docs_both_specs"], "architecture.md"),
-                "frontend": os.path.join(self.paths["docs_specs"], "front-end-architecture.md"),
-                "api": os.path.join(self.paths["docs_specs"], "api-reference.md"),
-                "data_models": os.path.join(self.paths["docs_specs"], "data-models.md"),
-            }
+            # 定义评审项目：名称, 原文档路径, 检查清单路径, 执行角色
+            review_configs = [
+                ("系统架构", 
+                 os.path.join(self.paths["docs_both_specs"], "architecture.md"), 
+                 os.path.join(self.paths["checklists"], "architecture-checklist.md"), 
+                 "Architect"),
+                ("前端架构", 
+                 os.path.join(self.paths["docs_codespecs"], "front-end-architecture.md"), 
+                 os.path.join(self.paths["checklists"], "frontend-architecture-checklist.md"), 
+                 "DesignArchitect"),
+                ("API 参考", 
+                 os.path.join(self.paths["docs_codespecs"], "api-reference.md"), 
+                 os.path.join(self.paths["checklists"], "api-checklist.md"), 
+                 "Architect"),
+                ("数据模型", 
+                 os.path.join(self.paths["docs_codespecs"], "data-models.md"), 
+                 os.path.join(self.paths["checklists"], "data-model-checklist.md"), 
+                 "Architect"),
+            ]
 
-            checklists = {
-                "architecture": os.path.join(self.paths["checklists"], "architecture-checklist.md"),
-                "frontend": os.path.join(self.paths["checklists"], "frontend-architecture-checklist.md"),
-            }
-
-            print("  📋 执行质量检查：")
-            for artifact_name, artifact_path in artifacts.items():
-                if os.path.exists(artifact_path):
-                    print(f"    ✓ {artifact_name} 已检查")
+            print("  📋 执行深度评审：")
+            for name, path, checklist_path, role in review_configs:
+                if os.path.exists(path):
+                    print(f"    🔍 正在评审: {name} (执行者: {role})")
+                    content = self._read_file(path)
+                    
+                    # 尝试加载清单，如果不存在则使用通用评审指令
+                    checklist = self._read_file(checklist_path) if os.path.exists(checklist_path) else "由专家进行一般性质量审核。"
+                    
+                    prompt = f"""
+                    任务: 请作为 {role} 专家，对照以下检查清单评审产出文档。
+                    
+                    检查清单:
+                    {checklist}
+                    
+                    文档内容:
+                    {content[:5000]}
+                    
+                    指令:
+                    1. 逐项检查文档是否满足清单要求。
+                    2. 如果发现不足，请在文档中进行补充或修正。
+                    3. 直接返回改进后的【完整】文档内容（Markdown）。
+                    """
+                    
+                    persona_file = f"{role.lower()}.md"
+                    if role == "DesignArchitect": persona_file = "design-architect.md"
+                    
+                    improved_content = self._run_agent_task(role, persona_file, prompt)
+                    
+                    # 保存改进后的新文件
+                    output_path = path.replace(".md", "-final.md").replace(".json", "-final.md")
+                    self._write_file(output_path, improved_content)
                 else:
-                    print(f"    ⚠️ {artifact_name} 未找到")
+                    print(f"    ⚠️ {name} 文档未找到: {path}")
 
-            self._log_phase(8.1, "质量检查循环", "SUCCESS", "所有可用产物已检查")
+            self._log_phase(8.1, "智能评审循环", "SUCCESS", "所有可用产物已完成评审并生成 final 版本")
             return True
         except Exception as e:
-            self._log_phase(8.1, "质量检查循环", "FAILED", str(e))
+            self._log_phase(8.1, "智能评审循环", "FAILED", str(e))
             raise
 
     # ─────────────────────── PHASE 9: 渲染与发布 ─────────────────────────
@@ -1096,33 +1195,73 @@ class WorkflowManager:
             raise
 
     # ─────────────────────── PHASE 11: 动态沟通与问题解决 ─────────────────────────
-    def phase_11_dynamic_session(self):
+    def phase_11_dynamic_session(self, topic="技术方案可行性讨论"):
         """
         PHASE 11: 智能体动态沟通与问题解决机制
 
-        在此阶段，系统为存储和管理多轮对话会话提供基础设施。
-        当遇到需求澄清、技术协商或决策会议时，可启动 Session。
+        在此阶段，系统模拟多个智能体针对关键决策点进行多轮对话协商。
+        目标是在遇到不确定性时，通过对话达成一致结论。
         """
         print("\n" + "="*70)
-        print("💬 PHASE 11: 动态沟通与问题解决机制")
+        print("💬 PHASE 11: 动态沟通与问题解决机制 (Clarification Loop)")
         print("="*70)
 
         try:
-            # 创建 Session 索引
-            session_index = {
-                "sessions": [],
-                "description": "智能体动态沟通会话索引",
-                "created_at": datetime.now().isoformat(),
-            }
+            session_history = []
+            participants = ["PM", "Architect"]
+            current_query = f"针对当前的主题——'{topic}'，请 PM 启动讨论，说明核心待决策点。"
+            
+            print(f"  📌 主题: {topic}")
+            
+            for round_num in range(1, 4):  # 最多执行 3 轮交互轮次 (PM <-> Architect)
+                print(f"\n  ══ 轮次 {round_num} ══")
+                
+                # 1. PM 提出需求或要求澄清
+                pm_req = f"历史背景:\n{json.dumps(session_history, ensure_ascii=False)}\n\n当前上下文/指令: {current_query if round_num == 1 else '根据架构师意见进行决策或追问。'}"
+                pm_res = self._run_agent_task("PM", "pm.md", pm_req)
+                session_history.append({"round": round_num, "sender": "PM", "content": pm_res})
+                
+                # 2. Architect 分析并回复
+                arch_req = f"全局上下文:\n{self.global_context[:1000]}\n\nPM 的指示:\n{pm_res}\n\n历史对话:\n{json.dumps(session_history, ensure_ascii=False)}"
+                arch_res = self._run_agent_task("Architect", "architect.md", arch_req)
+                session_history.append({"round": round_num, "sender": "Architect", "content": arch_res})
+                
+                # 检查是否达成最终共识
+                if "CONCLUDED" in arch_res.upper() or "CONCLUDED" in pm_res.upper():
+                    print("  🤝 智能体已达成共识，会话结束。")
+                    break
+                
+                current_query = "上文的架构分析是否能完全闭环？如果有疑问请继续讨论。"
 
-            index_path = os.path.join(self.paths["sessions"], "session_index.json")
-            self._write_file(index_path, json.dumps(session_index, ensure_ascii=False, indent=2))
+            # 持久化会话记录
+            session_file = os.path.join(self.paths["sessions"], f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+            self._write_file(session_file, json.dumps({"topic": topic, "messages": session_history}, ensure_ascii=False, indent=2))
+            
+            # 同时更新 Session 索引
+            self._update_session_index(topic, session_file)
 
-            self._log_phase(11, "动态沟通机制", "SUCCESS", f"会话管理系统已初始化于 {index_path}")
-            return index_path
+            self._log_phase(11, "动态会话循环", "SUCCESS", f"完成了 {len(session_history)//2} 轮高质量对话")
+            return session_file
         except Exception as e:
-            self._log_phase(11, "动态沟通机制", "FAILED", str(e))
+            self._log_phase(11, "动态会话循环", "FAILED", str(e))
             raise
+
+    def _update_session_index(self, topic, path):
+        """更新 Session 索引文件。"""
+        index_path = os.path.join(self.paths["sessions"], "session_index.json")
+        index = {"sessions": []}
+        if os.path.exists(index_path):
+            with open(index_path, "r", encoding="utf-8") as f: index = json.load(f)
+        
+        index["sessions"].append({
+            "id": f"sess-{datetime.now().strftime('%H%M%S')}",
+            "topic": topic,
+            "path": path,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        with open(index_path, "w", encoding="utf-8") as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
 
     # ════════════════════════════════════════════════════════════════════════
     # 工作流执行器 (Workflow Orchestrators)
@@ -1155,6 +1294,9 @@ class WorkflowManager:
             # PHASE 4: 系统架构设计
             self.phase_4_1_generate_architecture()
             self.phase_4_2_architecture_checklist()
+            
+            # NEW: PHASE 4.3: UV/UX 设计
+            self.phase_4_3_uv_ux_design()
 
             # PHASE 5: 前端架构设计
             self.phase_5_1_generate_frontend_architecture()
@@ -1212,6 +1354,7 @@ class WorkflowManager:
             3.2: self.phase_3_2_invest_check_stories,
             4.1: self.phase_4_1_generate_architecture,
             4.2: self.phase_4_2_architecture_checklist,
+            4.3: self.phase_4_3_uv_ux_design,
             5.1: self.phase_5_1_generate_frontend_architecture,
             5.2: self.phase_5_2_render_frontend_architecture,
             5.3: self.phase_5_3_frontend_architecture_checklist,
